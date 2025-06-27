@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+:root {
+  --background: #010101;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: #010101;
+  --color-foreground: var(--foreground);
+  --font-sans: 'Space Grotesk', Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #010101;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Space Grotesk', Arial, Helvetica, sans-serif;
+}
+
+/* Butter Button Animation (global) */
+.butter-btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 !important;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  transition: color 0.3s cubic-bezier(.77,0,.18,1);
+}
+.butter-btn .butter-fill {
+  position: absolute;
+  inset: 0;
+  background: #FE5500;
+  z-index: 0;
+  width: 0%;
+  left: 0;
+  transition: width 0.45s cubic-bezier(.77,0,.18,1);
+  opacity: 1;
+  pointer-events: none;
+}
+.butter-btn:hover .butter-fill,
+.butter-btn:focus .butter-fill {
+  width: 100%;
+  left: 0;
+  opacity: 1;
+  transition: width 0.45s cubic-bezier(.77,0,.18,1);
+}
+.butter-btn .butter-content, .butter-btn span:not(.butter-fill) {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  transition: color 0.3s cubic-bezier(.77,0,.18,1);
+}
+.butter-btn:hover .butter-content,
+.butter-btn:focus .butter-content {
+  color: #fff;
+}
+
+/* Bordered Butter Button (for work/project buttons only) */
+.butter-btn-bordered {
+  border: 2px solid #FE5500 !important;
+}
+
+/* Light theme Butter Button overrides */
+/* If you want a border in light mode for bordered buttons, keep this: */
+.light .butter-btn-bordered {
+  border: 2px solid #FE5500 !important;
+}
+
+/* Only force black text in light mode */
+.dropdown-butter-btn {
+  box-shadow: none !important;
+}
+.light .dropdown-butter-btn .butter-content {
+  color: #111 !important;
+}
+
+/* Global butter button theme fix: black text and no shadow in light mode, white in dark */
+.light .butter-btn, .light .butter-btn .butter-content {
+  color: #111 !important;
+  box-shadow: none !important;
+}
+
+/* Strong specificity for butter button text in light mode */
+.light .butter-btn .butter-content,
+.light .butter-btn,
+.light .butter-btn span {
+  color: #111 !important;
+}
