@@ -1,7 +1,6 @@
 "use client";
 import Navbar from "../Navbar";
 import Image from "next/image";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import React from "react";
 import { ThemeContext } from "../ThemeProvider";
@@ -124,7 +123,7 @@ function ButterButton({ children, className = '', as, href, ...props }: ButterBu
           href={href}
           className={`butter-btn px-5 py-2 border font-black uppercase tracking-widest text-xs md:text-base shadow-lg transition-none outline-none focus:outline-none box-border ${className} ${typeof window !== 'undefined' && document.body.classList.contains('light') ? 'bg-white text-black border-accent' : 'bg-transparent border-accent text-accent'}`}
           style={{ borderRadius: 0 }}
-          {...props as any}
+          {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
         >
           <span className="butter-content">{children}</span>
           <span className="butter-fill" />

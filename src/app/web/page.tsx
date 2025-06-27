@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import React from "react";
 import { ThemeContext } from "../ThemeProvider";
+import Link from "next/link";
 
 function BrowserMockup({ src, title }: { src: string; title: string }) {
   const { theme } = React.useContext(ThemeContext);

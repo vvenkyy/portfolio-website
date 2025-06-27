@@ -4,7 +4,7 @@ import { ThemeContext } from "./ThemeProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { SunIcon, MoonIcon, SparklesIcon, BeakerIcon, CodeBracketIcon, DevicePhoneMobileIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
 import { usePathname, useRouter } from "next/navigation";
 
 interface NavLink {

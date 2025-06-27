@@ -140,14 +140,14 @@ export default function PostersPage() {
       </div>
       {/* Floating Back to all works button */}
       <div className="fixed bottom-6 right-6 z-50">
-        <a
+        <Link
           href="/#services"
           className="butter-btn butter-btn-bordered px-5 py-2 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
           style={{ minWidth: 180, display: 'inline-block', borderRadius: 0 }}
         >
           <span className="butter-content">← Back to all works</span>
           <span className="butter-fill" />
-        </a>
+        </Link>
       </div>
       {/* Philosophy Section */}
       <section className="w-full flex flex-col items-center justify-center mt-24 mb-12">

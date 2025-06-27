@@ -2,10 +2,9 @@
 import Navbar from "../Navbar";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
-import { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import React from "react";
 import { ThemeContext } from "../ThemeProvider";
 
 const screenshots = [
@@ -174,14 +173,14 @@ export default function AppDevPage() {
       </motion.section>
       {/* Floating ButterButton */}
       <div className="fixed bottom-6 right-6 z-50">
-        <a
+        <Link
           href="/"
           className="butter-btn butter-btn-bordered px-6 py-3 text-base shadow-lg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
           style={{ minWidth: 140, display: 'inline-block', borderRadius: 0 }}
         >
           <span className="butter-content">← Back to all works</span>
           <span className="butter-fill" />
-        </a>
+        </Link>
       </div>
     </div>
   );

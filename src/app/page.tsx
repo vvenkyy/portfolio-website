@@ -2,20 +2,11 @@
 import { useContext, useRef, useState, useEffect } from "react";
 import { ThemeContext } from "./ThemeProvider";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { SunIcon, MoonIcon, PencilIcon, CodeBracketIcon, LightBulbIcon, SparklesIcon, EyeIcon, UsersIcon, BeakerIcon, ArrowTrendingUpIcon, ChatBubbleLeftRightIcon, WrenchScrewdriverIcon, RocketLaunchIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import { LightBulbIcon, EyeIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
-import { useInView } from "framer-motion";
-import { BootAnimationContext } from "./BootAnimationClient";
 import React from "react";
-import Link from "next/link";
 import Navbar from "./Navbar";
-
-const SERVICE_IMAGES = [
-  "/works/posters/general posters/main.png",
-  "/works/logo design and brand identity/Urban Pulse/png/150ppi/Primary logo@150x.png",
-  "/works/logo design and brand identity/CIINIPHILIAA REDESIGN.png",
-  "/works/MYLOGO/150ppi/Linkedin cover.jpg"
-];
+import { BootAnimationContext } from "./BootAnimationClient";
 
 // Butter fill animation styles
 const butterStyle = `
@@ -553,7 +544,7 @@ export default function Home() {
               Every pixel, every word, every interaction is a chance to move someone. I believe in work that's bold, honest, and crafted with intent—where beauty meets clarity, and function meets feeling.
             </p>
             <div className={`flex flex-col gap-5 text-base md:text-lg font-light max-w-2xl mx-auto mt-4 ${theme === 'light' ? 'text-neutral-700' : 'text-neutral-400'}`}>
-              <span className="flex items-center gap-3 justify-center"><SparklesIcon className="w-6 h-6 text-accent" />Simplicity is power. Minimal doesn't mean empty—it means essential.</span>
+              {/* <span className="flex items-center gap-3 justify-center"><SparklesIcon className="w-6 h-6 text-accent" />Simplicity is power. Minimal doesn't mean empty—it means essential.</span> */}
               <span className="flex items-center gap-3 justify-center"><EyeIcon className="w-6 h-6 text-accent" />I design for meaning, not just for looks.</span>
               <span className="flex items-center gap-3 justify-center"><LightBulbIcon className="w-6 h-6 text-accent" />Good design is invisible, but unforgettable.</span>
             </div>
@@ -599,10 +590,10 @@ export default function Home() {
             Ready to launch your next big thing? I design and build complete digital products—let's make it bold, modern, and unforgettable.
           </p>
           <ButterButton as="a" href="mailto:aravindvenky225@gmail.com" className="inline-flex items-center gap-3">Email Me <ArrowRightIcon className="w-6 h-6" /></ButterButton>
-          <div className="flex flex-col md:flex-row gap-4 mt-8 w-full items-stretch">
+          <div className="flex gap-4 mt-8">
             {/* Social Button Cards */}
             <a href="https://www.linkedin.com/in/venkateshr2006/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
-              className="butter-btn group flex items-center gap-3 px-5 py-3 rounded-full border-2 border-accent bg-background hover:bg-accent/10 transition-all duration-200 hover:scale-105 hover:-translate-y-1 w-full md:w-auto">
+              className="butter-btn group flex items-center gap-3 px-5 py-3 rounded-full border-2 border-accent bg-background hover:bg-accent/10 transition-all duration-200 hover:scale-105 hover:-translate-y-1">
               <span className="butter-fill" />
               <span className="butter-content flex items-center gap-3">
                 <svg
@@ -619,7 +610,7 @@ export default function Home() {
               </span>
             </a>
             <a href="https://www.instagram.com/vvenkyy_/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
-              className="butter-btn group flex items-center gap-3 px-5 py-3 rounded-full border-2 border-accent bg-background hover:bg-accent/10 transition-all duration-200 hover:scale-105 hover:-translate-y-1 w-full md:w-auto">
+              className="butter-btn group flex items-center gap-3 px-5 py-3 rounded-full border-2 border-accent bg-background hover:bg-accent/10 transition-all duration-200 hover:scale-105 hover:-translate-y-1">
               <span className="butter-fill" />
               <span className="butter-content flex items-center gap-3">
                 <svg className="w-7 h-7 transition-colors duration-200" viewBox="0 0 256 256" fill="currentColor">
@@ -632,7 +623,7 @@ export default function Home() {
               </span>
             </a>
             <a href="https://www.fiverr.com/s/bdwvvrm" target="_blank" rel="noopener noreferrer" aria-label="Fiverr"
-              className="butter-btn group flex items-center gap-3 px-5 py-3 rounded-full border-2 border-accent bg-background hover:bg-accent/10 transition-all duration-200 hover:scale-105 hover:-translate-y-1 w-full md:w-auto">
+              className="butter-btn group flex items-center gap-3 px-5 py-3 rounded-full border-2 border-accent bg-background hover:bg-accent/10 transition-all duration-200 hover:scale-105 hover:-translate-y-1">
               <span className="butter-fill" />
               <span className="butter-content flex items-center gap-3">
                 <svg className="w-7 h-7 transition-colors duration-200" viewBox="0 0 256 256" fill="currentColor">
@@ -785,7 +776,7 @@ function ButterButton({ children, className = '', as, href, ...props }: ButterBu
           href={href}
           className={`${baseBtnClass} ${borderedClass}`}
           style={{ borderRadius: 0 }}
-          {...props as any}
+          {...(props as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
         >
           <span className="butter-content">{children}</span>
           <span className="butter-fill" />

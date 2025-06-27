@@ -73,8 +73,6 @@ export default function PosterDetailPage() {
 
 function PosterDetailPageInner({ slug }: { slug: string }) {
   console.log("MOUNTED PosterDetailPageInner", slug);
-  const router = useRouter();
-  const posterRef = useRef<HTMLImageElement>(null);
   const [heroBooted, setHeroBooted] = useState(false);
   const [navbarBooted, setNavbarBooted] = useState(false);
   const [descStage, setDescStage] = useState<'orange' | 'full'>('orange');
@@ -479,14 +477,14 @@ function PosterDetailPageInner({ slug }: { slug: string }) {
           </section>
           {/* Floating Back to all posters button */}
           <div className="fixed bottom-6 right-6 z-50">
-            <a
+            <Link
               href="/posters"
               className="butter-btn butter-btn-bordered px-3 py-1.5 text-xs shadow-lg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
               style={{ minWidth: 120, display: 'inline-block', borderRadius: 0 }}
             >
               <span className="butter-content">← Back to all posters</span>
               <span className="butter-fill" />
-            </a>
+            </Link>
           </div>
         </div>
       </React.Fragment>
@@ -591,14 +589,14 @@ function PosterDetailPageInner({ slug }: { slug: string }) {
           </section>
           {/* Floating Back to all posters button (reuse) */}
           <div className="fixed bottom-6 right-6 z-50">
-            <a
+            <Link
               href="/posters"
               className="butter-btn butter-btn-bordered px-3 py-1.5 text-xs shadow-lg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
               style={{ minWidth: 120, display: 'inline-block', borderRadius: 0 }}
             >
               <span className="butter-content">← Back to all posters</span>
               <span className="butter-fill" />
-            </a>
+            </Link>
           </div>
         </div>
       </React.Fragment>
@@ -672,14 +670,14 @@ function PosterDetailPageInner({ slug }: { slug: string }) {
           </section>
           {/* Floating Back to all posters button (reuse) */}
           <div className="fixed bottom-6 right-6 z-50">
-            <a
+            <Link
               href="/posters"
               className="butter-btn butter-btn-bordered px-3 py-1.5 text-xs shadow-lg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
               style={{ minWidth: 120, display: 'inline-block', borderRadius: 0 }}
             >
               <span className="butter-content">← Back to all posters</span>
               <span className="butter-fill" />
-            </a>
+            </Link>
           </div>
         </div>
       </React.Fragment>
@@ -752,14 +750,14 @@ function PosterDetailPageInner({ slug }: { slug: string }) {
           </section>
           {/* Floating Back to all posters button (reuse) */}
           <div className="fixed bottom-6 right-6 z-50">
-            <a
+            <Link
               href="/posters"
               className="butter-btn butter-btn-bordered px-3 py-1.5 text-xs shadow-lg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
               style={{ minWidth: 120, display: 'inline-block', borderRadius: 0 }}
             >
               <span className="butter-content">← Back to all posters</span>
               <span className="butter-fill" />
-            </a>
+            </Link>
           </div>
         </div>
       </React.Fragment>
@@ -832,14 +830,14 @@ function PosterDetailPageInner({ slug }: { slug: string }) {
           </section>
           {/* Floating Back to all posters button (reuse) */}
           <div className="fixed bottom-6 right-6 z-50">
-            <a
+            <Link
               href="/posters"
               className="butter-btn butter-btn-bordered px-3 py-1.5 text-xs shadow-lg focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
               style={{ minWidth: 120, display: 'inline-block', borderRadius: 0 }}
             >
               <span className="butter-content">← Back to all posters</span>
               <span className="butter-fill" />
-            </a>
+            </Link>
           </div>
         </div>
       </React.Fragment>
