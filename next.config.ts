@@ -66,9 +66,6 @@ const nextConfig: NextConfig = {
   // Output optimization
   output: 'standalone',
   
-  // Reduce bundle size
-  swcMinify: true,
-  
   // Optimize for production
   poweredByHeader: false,
   

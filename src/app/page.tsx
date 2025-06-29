@@ -227,7 +227,7 @@ export default function Home() {
               initial={{ y: 40, opacity: 0 }}
               animate={booted ? { y: 0, opacity: 1, transition: { delay: 1.1, duration: 0.7, ease: 'easeInOut' } } : {}}
             >
-              LET'S MAKE IT
+              LET&rsquo;S MAKE IT
             </motion.span>
             <motion.span
               className={`font-black uppercase tracking-tight transition-all duration-700
@@ -268,7 +268,7 @@ export default function Home() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.98 }}
         >
-          Let's Talk
+          Let&rsquo;s Talk
         </motion.a>
       </section>
 
@@ -546,12 +546,12 @@ export default function Home() {
           </motion.div>
           <div className="text-center w-full">
             <p className={`text-2xl md:text-3xl font-black mb-4 leading-tight ${theme === 'light' ? 'text-neutral-900' : 'text-accent'}`}>
-              Design is not decoration. It's storytelling, emotion, and impact.
+              Design is not decoration. It&rsquo;s storytelling, emotion, and impact.
             </p>
             <p
               className={`text-lg md:text-xl font-light mb-8 max-w-2xl mx-auto ${theme === 'light' ? 'text-neutral-700' : 'text-neutral-300'}`}
             >
-              Every pixel, every word, every interaction is a chance to move someone. I believe in work that's bold, honest, and crafted with intent—where beauty meets clarity, and function meets feeling.
+              Every pixel, every word, every interaction is a chance to move someone. I believe in work that&rsquo;s bold, honest, and crafted with intent—where beauty meets clarity, and function meets feeling.
             </p>
             <div className={`flex flex-col gap-5 text-base md:text-lg font-light max-w-2xl mx-auto mt-4 ${theme === 'light' ? 'text-neutral-700' : 'text-neutral-400'}`}>
               {/* <span className="flex items-center gap-3 justify-center"><SparklesIcon className="w-6 h-6 text-accent" />Simplicity is power. Minimal doesn't mean empty—it means essential.</span> */}
@@ -582,7 +582,7 @@ export default function Home() {
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-accent/10 rounded-full blur-3xl z-0" />
         <div className="relative z-10 w-full max-w-3xl flex flex-col items-center md:items-start">
           <h2 className={`font-black text-2xl sm:text-3xl md:text-6xl leading-tight text-center md:text-left mb-6 ${theme === 'light' ? 'text-neutral-900' : 'text-accent'}`}>
-            Let's create something<br />
+            Let&rsquo;s create something<br />
             <span className="relative inline-block">
               unforgettable
               <motion.span
@@ -597,7 +597,7 @@ export default function Home() {
             —together.
           </h2>
           <p className={`text-base sm:text-lg md:text-2xl font-light mb-8 md:mb-10 max-w-xl text-center md:text-left ${theme === 'light' ? 'text-neutral-700' : 'text-neutral-400'}`}>
-            Ready to launch your next big thing? I design and build complete digital products—let's make it bold, modern, and unforgettable.
+            Ready to launch your next big thing? I design and build complete digital products—let&rsquo;s make it bold, modern, and unforgettable.
           </p>
           <ButterButton as="a" href="mailto:aravindvenky225@gmail.com" className="inline-flex items-center gap-3 mb-8 md:mb-0">Email Me <ArrowRightIcon className="w-6 h-6" /></ButterButton>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 md:mt-8 w-full max-w-sm sm:max-w-none">

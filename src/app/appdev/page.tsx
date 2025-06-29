@@ -1,13 +1,12 @@
 "use client";
 import Navbar from "../Navbar";
-import Image from "next/image";
-import { useEffect, useRef } from "react";
-import React from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+import React from "react";
 import { ThemeContext } from "../ThemeProvider";
 import OptimizedVideo from "../components/OptimizedVideo";
 import OptimizedImage from "../components/OptimizedImage";
+import Link from "next/link";
 
 const screenshots = [
   {
@@ -173,8 +172,8 @@ export default function AppDevPage() {
         transition={{ duration: 0.7, ease: 'easeOut' }}
       >
         <div className="max-w-2xl text-center">
-          <div className={`text-2xl md:text-3xl font-black mb-4 drop-shadow-xl ${theme === 'light' ? 'text-black' : 'text-accent'}`}>"Technology is not just built—it's designed."</div>
-          <div className={`text-lg md:text-xl font-light leading-relaxed ${theme === 'light' ? 'text-neutral-700' : 'text-neutral-400'}`}>Every app, every feature, every interaction is a story—crafted to empower, connect, and elevate. Technology is not just what we build, it's how we shape possibility.</div>
+          <div className={`text-2xl md:text-3xl font-black mb-4 drop-shadow-xl ${theme === 'light' ? 'text-black' : 'text-accent'}`}>&ldquo;Technology is not just built—it&rsquo;s designed.&rdquo;</div>
+          <div className={`text-lg md:text-xl font-light leading-relaxed ${theme === 'light' ? 'text-neutral-700' : 'text-neutral-400'}`}>Every app, every feature, every interaction is a story—crafted to empower, connect, and elevate. Technology is not just what we build, it&rsquo;s how we shape possibility.</div>
         </div>
       </motion.section>
       {/* Floating ButterButton */}
