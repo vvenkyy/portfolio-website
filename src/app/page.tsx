@@ -40,24 +40,28 @@ export default function Home() {
   const [titleSettled, setTitleSettled] = useState(false);
   const [navbarBooted, setNavbarBooted] = useState(false);
   const [isOldDevice, setIsOldDevice] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Detect older devices that can't handle videos well
+  // Detect mobile devices and older devices for performance optimization
   useEffect(() => {
     const userAgent = navigator.userAgent;
     const isIPhone8 = /iPhone.*OS 1[0-2]/.test(userAgent) || /iPhone.*OS 13/.test(userAgent);
     const isOldDevice = isIPhone8 || /iPhone.*OS 1[0-4]/.test(userAgent);
+    const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    
     setIsOldDevice(isOldDevice);
+    setIsMobile(isMobileDevice);
   }, []);
 
-  // Parallax for Hero background
+  // Parallax for Hero background (disabled on mobile for performance)
   const heroRef = useRef(null);
   const { scrollY: heroScrollY } = useScroll({ target: heroRef });
-  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", isOldDevice ? "0%" : "-28%"]);
+  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", isMobile ? "0%" : "-28%"]);
 
-  // Parallax for About image
+  // Parallax for About image (disabled on mobile for performance)
   const aboutImgRef = useRef(null);
   const { scrollY: aboutScrollY } = useScroll({ target: aboutImgRef });
-  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", isOldDevice ? "0%" : "-20%"]);
+  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", isMobile ? "0%" : "-20%"]);
 
   const heroSectionRef = React.useRef<HTMLElement | null>(null);
   const aboutSectionRef = React.useRef<HTMLElement | null>(null);
@@ -131,9 +135,9 @@ export default function Home() {
     }
   }, [booted]);
 
-  // Force video autoplay on iPhone (only for newer devices)
+  // Force video autoplay on iPhone (only for desktop devices)
   useEffect(() => {
-    if (isOldDevice) return; // Skip video handling for older devices
+    if (isMobile || isOldDevice) return; // Skip video handling for mobile and older devices
     
     const videos = document.querySelectorAll('video');
     videos.forEach(video => {
@@ -155,7 +159,7 @@ export default function Home() {
       // Delay video play to prevent crashes
       setTimeout(playVideo, 500);
     });
-  }, [isOldDevice]);
+  }, [isMobile, isOldDevice]);
 
   return (
     <main 
@@ -195,15 +199,26 @@ export default function Home() {
       )}
 
       {/* Hero Section: Cinematic, Full-Screen, Distinguished */}
-      <section
-        id="hero"
-        ref={heroSectionRef}
-        className="w-full flex flex-col items-center justify-center h-screen px-4 overflow-hidden relative"
+      <motion.section
+        ref={heroRef}
+        className={`relative w-full min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden ${theme === 'light' ? 'bg-white' : 'bg-background'}`}
         style={{ 
-          position: 'relative', 
           background: theme === 'light' ? '#fff' : '#010101',
           WebkitOverflowScrolling: 'touch'
         }}
+        initial="offscreen"
+        whileInView="onscreen"
+        exit="exit"
+        variants={isMobile ? {
+          offscreen: { opacity: 0 },
+          onscreen: { opacity: 1, transition: { duration: 0.5 } },
+          exit: { opacity: 0, transition: { duration: 0.3 } }
+        } : {
+          offscreen: { opacity: 0, y: 64 },
+          onscreen: { opacity: 1, y: 0, transition: { duration: 1, ease: 'easeOut' } },
+          exit: { opacity: 0, y: 64, transition: { duration: 0.7, ease: 'easeIn' } }
+        }}
+        viewport={{ once: false, amount: 0.3 }}
       >
         {/* Parallax Background Image */}
         <motion.div
@@ -212,8 +227,8 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={booted ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : { opacity: 1 }}
         >
-          {isOldDevice ? (
-            // Static background for older devices to prevent crashes
+          {isMobile || isOldDevice ? (
+            // Static background for mobile and older devices to prevent crashes
             <div 
               className="w-full h-full"
               style={{
@@ -225,7 +240,7 @@ export default function Home() {
               }}
             />
           ) : (
-            // Video background for newer devices
+            // Video background only for desktop devices
             <video
               src="/works/backdrop vid/background vid.mp4"
               autoPlay
@@ -339,14 +354,26 @@ export default function Home() {
         >
           Let's Talk
         </motion.a>
-      </section>
+      </motion.section>
 
       {/* Mobile About Section */}
-      <section
-        id="about"
-        ref={aboutSectionRef}
-        className="w-full flex flex-col items-center justify-center py-8 px-4 md:hidden"
+      <motion.section
+        ref={aboutImgRef}
+        className={`w-full flex flex-col items-center justify-center py-8 md:py-24 px-4 md:px-8 ${theme === 'light' ? 'bg-white' : 'bg-background'}`}
         style={{ background: theme === 'light' ? '#fff' : '#010101' }}
+        initial="offscreen"
+        whileInView="onscreen"
+        exit="exit"
+        variants={isMobile ? {
+          offscreen: { opacity: 0 },
+          onscreen: { opacity: 1, transition: { duration: 0.5 } },
+          exit: { opacity: 0, transition: { duration: 0.3 } }
+        } : {
+          offscreen: { opacity: 0, y: 64 },
+          onscreen: { opacity: 1, y: 0, transition: { duration: 1, ease: 'easeOut' } },
+          exit: { opacity: 0, y: 64, transition: { duration: 0.7, ease: 'easeIn' } }
+        }}
+        viewport={{ once: false, amount: 0.3 }}
       >
         <div className="flex flex-col items-center w-full max-w-xl mx-auto">
           <div className="w-[300px] h-[300px] mb-6 overflow-hidden border-8 border-background dark:border-black bg-gradient-to-br from-accent/80 to-black flex items-center justify-center shadow-2xl">
@@ -386,7 +413,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* About Section: Editorial, Modern, Like Reference */}
       <motion.section
@@ -514,7 +541,7 @@ export default function Home() {
           ].map((s) => (
             <div key={s.name} className="flex flex-col items-center justify-center w-full px-4">
               <div className={`w-full max-w-[420px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}> 
-                {s.video && !isOldDevice ? (
+                {s.video && !isMobile && !isOldDevice ? (
                   <video
                     src={s.video}
                     autoPlay
@@ -536,7 +563,7 @@ export default function Home() {
                     }}
                   />
                 ) : (
-                  // Static background for older devices or when no video
+                  // Static background for mobile devices or when no video
                   <div 
                     className="w-full h-full rounded"
                     style={{
@@ -567,7 +594,7 @@ export default function Home() {
       </section>
       {/* Desktop Services Section */}
       <section className="scroll-mt-24 hidden md:block" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <StepRevealServices servicesSectionRef={servicesSectionRef} isOldDevice={isOldDevice} />
+        <StepRevealServices servicesSectionRef={servicesSectionRef} isOldDevice={isOldDevice} isMobile={isMobile} />
       </section>
 
       {/* Black spacer below works section */}
@@ -757,8 +784,9 @@ export default function Home() {
 type StepRevealServicesProps = { 
   servicesSectionRef?: React.RefObject<HTMLDivElement | null>;
   isOldDevice?: boolean;
+  isMobile?: boolean;
 };
-function StepRevealServices({ servicesSectionRef, isOldDevice = false }: StepRevealServicesProps) {
+function StepRevealServices({ servicesSectionRef, isOldDevice = false, isMobile = false }: StepRevealServicesProps) {
   const { theme } = useContext(ThemeContext);
   // Example data
   type Service = {
@@ -844,7 +872,7 @@ function StepRevealServices({ servicesSectionRef, isOldDevice = false }: StepRev
             style={{ opacity: i === active ? 1 : 0.3, transition: 'opacity 0.3s' }}
           >
             <div className={`w-full max-w-[520px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
-              {s.video && !isOldDevice ? (
+              {s.video && !isMobile && !isOldDevice ? (
                 <video
                   src={s.video}
                   autoPlay
@@ -866,7 +894,7 @@ function StepRevealServices({ servicesSectionRef, isOldDevice = false }: StepRev
                   }}
                 />
               ) : (
-                // Static background for older devices or when no video
+                // Static background for mobile devices or when no video
                 <div 
                   className="w-full h-full rounded"
                   style={{
