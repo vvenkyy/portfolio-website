@@ -39,16 +39,25 @@ export default function Home() {
   const { booted } = useContext(BootAnimationContext);
   const [titleSettled, setTitleSettled] = useState(false);
   const [navbarBooted, setNavbarBooted] = useState(false);
+  const [isOldDevice, setIsOldDevice] = useState(false);
+
+  // Detect older devices for performance optimization
+  useEffect(() => {
+    const userAgent = navigator.userAgent;
+    const isIPhone8 = /iPhone.*OS 1[0-2]/.test(userAgent) || /iPhone.*OS 13/.test(userAgent);
+    const isOldDevice = isIPhone8 || /iPhone.*OS 1[0-4]/.test(userAgent);
+    setIsOldDevice(isOldDevice);
+  }, []);
 
   // Parallax for Hero background
   const heroRef = useRef(null);
   const { scrollY: heroScrollY } = useScroll({ target: heroRef });
-  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", "-28%"]);
+  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", isOldDevice ? "0%" : "-28%"]);
 
   // Parallax for About image
   const aboutImgRef = useRef(null);
   const { scrollY: aboutScrollY } = useScroll({ target: aboutImgRef });
-  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", "-20%"]);
+  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", isOldDevice ? "0%" : "-20%"]);
 
   const heroSectionRef = React.useRef<HTMLElement | null>(null);
   const aboutSectionRef = React.useRef<HTMLElement | null>(null);
@@ -124,23 +133,30 @@ export default function Home() {
 
   // Force video autoplay on iPhone
   useEffect(() => {
-    const videos = document.querySelectorAll('video');
-    videos.forEach(video => {
-      // Force play on iPhone
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Auto-play was prevented, try again on user interaction
-          const handleUserInteraction = () => {
-            video.play().catch(() => {});
-            document.removeEventListener('touchstart', handleUserInteraction);
-            document.removeEventListener('click', handleUserInteraction);
-          };
-          document.addEventListener('touchstart', handleUserInteraction);
-          document.addEventListener('click', handleUserInteraction);
-        });
-      }
-    });
+    // Use requestAnimationFrame for better performance
+    const playVideos = () => {
+      const videos = document.querySelectorAll('video');
+      videos.forEach(video => {
+        // Force play on iPhone with better error handling
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            // Auto-play was prevented, try again on user interaction
+            const handleUserInteraction = () => {
+              video.play().catch(() => {});
+              document.removeEventListener('touchstart', handleUserInteraction);
+              document.removeEventListener('click', handleUserInteraction);
+            };
+            document.addEventListener('touchstart', handleUserInteraction);
+            document.addEventListener('click', handleUserInteraction);
+          });
+        }
+      });
+    };
+
+    // Delay video play for better performance
+    const timeoutId = setTimeout(playVideos, 100);
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
@@ -186,8 +202,17 @@ export default function Home() {
           className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden"
           style={{ y: heroBgY, WebkitTransform: 'translate3d(0,0,0)' }}
           initial={{ opacity: 0 }}
-          animate={booted ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : {}}
+          animate={booted && !isOldDevice ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : { opacity: 1 }}
         >
+          {/* Fallback background for older devices */}
+          <div 
+            className="absolute inset-0 w-full h-full"
+            style={{
+              background: theme === 'light' 
+                ? 'linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 100%)'
+                : 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)'
+            }}
+          />
           <video
             src="/works/backdrop vid/background vid.mp4"
             autoPlay
@@ -200,13 +225,16 @@ export default function Home() {
             x5-video-player-fullscreen="false"
             preload="metadata"
             poster=""
+            disablePictureInPicture={true}
+            disableRemotePlayback={true}
             className="w-full h-full object-cover"
             style={{ 
               position: 'absolute', 
               inset: 0, 
               filter: theme === 'light' ? 'invert(1) brightness(1.1) contrast(0.95)' : 'none',
               WebkitTransform: 'translate3d(0,0,0)',
-              transform: 'translate3d(0,0,0)'
+              transform: 'translate3d(0,0,0)',
+              willChange: 'transform'
             }}
           />
         </motion.div>
