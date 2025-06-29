@@ -39,25 +39,16 @@ export default function Home() {
   const { booted } = useContext(BootAnimationContext);
   const [titleSettled, setTitleSettled] = useState(false);
   const [navbarBooted, setNavbarBooted] = useState(false);
-  const [isOldDevice, setIsOldDevice] = useState(false);
-
-  // Detect older devices for performance optimization
-  useEffect(() => {
-    const userAgent = navigator.userAgent;
-    const isIPhone8 = /iPhone.*OS 1[0-2]/.test(userAgent) || /iPhone.*OS 13/.test(userAgent);
-    const isOldDevice = isIPhone8 || /iPhone.*OS 1[0-4]/.test(userAgent);
-    setIsOldDevice(isOldDevice);
-  }, []);
 
   // Parallax for Hero background
   const heroRef = useRef(null);
   const { scrollY: heroScrollY } = useScroll({ target: heroRef });
-  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", isOldDevice ? "0%" : "-28%"]);
+  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", "-28%"]);
 
   // Parallax for About image
   const aboutImgRef = useRef(null);
   const { scrollY: aboutScrollY } = useScroll({ target: aboutImgRef });
-  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", isOldDevice ? "0%" : "-20%"]);
+  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", "-20%"]);
 
   const heroSectionRef = React.useRef<HTMLElement | null>(null);
   const aboutSectionRef = React.useRef<HTMLElement | null>(null);
@@ -133,34 +124,34 @@ export default function Home() {
 
   // Force video autoplay on iPhone
   useEffect(() => {
-    // Use requestAnimationFrame for better performance
-    const playVideos = () => {
-      const videos = document.querySelectorAll('video');
-      videos.forEach(video => {
-        // Force play on iPhone with better error handling
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch((error) => {
-            // Auto-play was prevented, try again on user interaction
-            const handleUserInteraction = () => {
-              video.play().catch(() => {});
-              document.removeEventListener('touchstart', handleUserInteraction);
-              document.removeEventListener('click', handleUserInteraction);
-            };
-            document.addEventListener('touchstart', handleUserInteraction);
-            document.addEventListener('click', handleUserInteraction);
-          });
-        }
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+      // Simple autoplay attempt
+      video.play().catch(() => {
+        // If autoplay fails, try again on first user interaction
+        const handleInteraction = () => {
+          video.play().catch(() => {});
+          document.removeEventListener('touchstart', handleInteraction);
+          document.removeEventListener('click', handleInteraction);
+        };
+        document.addEventListener('touchstart', handleInteraction);
+        document.addEventListener('click', handleInteraction);
       });
-    };
-
-    // Delay video play for better performance
-    const timeoutId = setTimeout(playVideos, 100);
-    return () => clearTimeout(timeoutId);
+    });
   }, []);
 
   return (
-    <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white' : 'bg-background'} text-foreground`} style={{ WebkitOverflowScrolling: 'touch', WebkitTapHighlightColor: 'transparent' }}>
+    <main 
+      className={`min-h-screen transition-colors duration-500 ${
+        theme === 'light' 
+          ? 'bg-white text-gray-900' 
+          : 'bg-black text-white'
+      }`}
+      style={{ 
+        WebkitTransform: 'translate3d(0,0,0)',
+        transform: 'translate3d(0,0,0)'
+      }}
+    >
       {/* Reserve space for sticky navbar to prevent layout shift */}
       <div style={{ height: 72, minHeight: 72, width: '100%' }} />
       {/* Sticky Navbar: Show even later after boot animation is done */}
@@ -202,17 +193,8 @@ export default function Home() {
           className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden"
           style={{ y: heroBgY, WebkitTransform: 'translate3d(0,0,0)' }}
           initial={{ opacity: 0 }}
-          animate={booted && !isOldDevice ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : { opacity: 1 }}
+          animate={booted ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : { opacity: 1 }}
         >
-          {/* Fallback background for older devices */}
-          <div 
-            className="absolute inset-0 w-full h-full"
-            style={{
-              background: theme === 'light' 
-                ? 'linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 100%)'
-                : 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)'
-            }}
-          />
           <video
             src="/works/backdrop vid/background vid.mp4"
             autoPlay
@@ -224,17 +206,13 @@ export default function Home() {
             x5-video-player-type="h5"
             x5-video-player-fullscreen="false"
             preload="metadata"
-            poster=""
-            disablePictureInPicture={true}
-            disableRemotePlayback={true}
             className="w-full h-full object-cover"
             style={{ 
               position: 'absolute', 
               inset: 0, 
               filter: theme === 'light' ? 'invert(1) brightness(1.1) contrast(0.95)' : 'none',
               WebkitTransform: 'translate3d(0,0,0)',
-              transform: 'translate3d(0,0,0)',
-              willChange: 'transform'
+              transform: 'translate3d(0,0,0)'
             }}
           />
         </motion.div>
@@ -723,7 +701,7 @@ export default function Home() {
         <span>&copy; {new Date().getFullYear()} <span className="text-accent font-bold">VVENKYY</span>. All rights reserved.</span>
         <span className="mt-2">Made with passion & code.</span>
       </footer>
-    </div>
+    </main>
   );
 }
 
