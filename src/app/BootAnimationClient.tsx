@@ -3,21 +3,43 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { ThemeContext } from "./ThemeProvider";
+import ContentPreloader from "./components/ContentPreloader";
 
-export const BootAnimationContext = createContext<{ booted: boolean }>({ booted: false });
+export const BootAnimationContext = createContext<{ 
+  booted: boolean;
+  bootProgress: number;
+}>({ booted: false, bootProgress: 0 });
 
 export default function BootAnimationClient({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<"idle" | "transition" | "done">("idle");
+  const [bootProgress, setBootProgress] = useState(0);
   const { theme } = useContext(ThemeContext);
+
+  // Instagram-style: track boot progress for smart preloading
+  useEffect(() => {
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      if (phase === "idle") {
+        progress = Math.min(progress + 2, 30);
+      } else if (phase === "transition") {
+        progress = Math.min(progress + 3, 80);
+      } else if (phase === "done") {
+        progress = 100;
+      }
+      setBootProgress(progress);
+    }, 50);
+
+    return () => clearInterval(progressInterval);
+  }, [phase]);
 
   // Reduced timing for better performance
   useEffect(() => {
     if (phase === "idle") {
-      const timeout = setTimeout(() => setPhase("transition"), 800); // Reduced from 1200ms
+      const timeout = setTimeout(() => setPhase("transition"), 800);
       return () => clearTimeout(timeout);
     }
     if (phase === "transition") {
-      const timeout = setTimeout(() => setPhase("done"), 600); // Reduced from 900ms
+      const timeout = setTimeout(() => setPhase("done"), 600);
       return () => clearTimeout(timeout);
     }
   }, [phase]);
@@ -25,42 +47,42 @@ export default function BootAnimationClient({ children }: { children: React.Reac
   // Simplified logo animation with reduced complexity
   const logoVariants = {
     idle: {
-      y: [0, -8, 0, 8, 0], // Reduced movement range
+      y: [0, -8, 0, 8, 0],
       scale: 1,
       transition: { 
-        duration: 1.8, // Reduced from 2.4s
+        duration: 1.8,
         repeat: Infinity, 
         ease: "easeInOut" as const,
-        times: [0, 0.25, 0.5, 0.75, 1] // More efficient timing
+        times: [0, 0.25, 0.5, 0.75, 1]
       },
     },
     transition: {
-      y: "-60vh", // Reduced movement distance
-      scale: 1.2, // Slight scale for visual interest
+      y: "-60vh",
+      scale: 1.2,
       transition: { 
-        duration: 0.6, // Reduced from 0.9s
+        duration: 0.6,
         ease: "easeInOut" as const 
       },
     },
     done: { 
       y: "-60vh", 
       scale: 1.2,
-      transition: { duration: 0.1 } // Quick final state
+      transition: { duration: 0.1 }
     },
   };
 
   // Simplified content animation
   const contentVariants = {
     hidden: { 
-      y: "60vh", // Reduced movement distance
+      y: "60vh",
       opacity: 0 
     },
     visible: { 
       y: 0, 
       opacity: 1,
       transition: { 
-        duration: 0.6, // Reduced from 0.9s
-        ease: "easeOut" as const // Changed to easeOut for better performance
+        duration: 0.6,
+        ease: "easeOut" as const
       } 
     },
   };
@@ -68,7 +90,15 @@ export default function BootAnimationClient({ children }: { children: React.Reac
   const booted = phase === "done";
 
   return (
-    <BootAnimationContext.Provider value={{ booted }}>
+    <BootAnimationContext.Provider value={{ booted, bootProgress }}>
+      {/* Instagram-style: Content preloader that works during boot animation */}
+      <ContentPreloader 
+        bootProgress={bootProgress}
+        onPreloadComplete={() => {
+          console.log('🎬 Content preloading completed!');
+        }}
+      />
+      
       <>
         <AnimatePresence mode="wait">
           {phase !== "done" && (
@@ -79,13 +109,13 @@ export default function BootAnimationClient({ children }: { children: React.Reac
               exit={{ 
                 opacity: 0, 
                 transition: { 
-                  duration: 0.3, // Reduced from 0.5s
-                  delay: 0.05 // Reduced delay
+                  duration: 0.3,
+                  delay: 0.05
                 } 
               }}
               style={{ 
                 pointerEvents: "all",
-                willChange: "opacity" // Performance hint
+                willChange: "opacity"
               }}
             >
               <motion.div
@@ -98,18 +128,18 @@ export default function BootAnimationClient({ children }: { children: React.Reac
                   left: 0, 
                   right: 0, 
                   margin: "auto",
-                  willChange: "transform" // Performance hint
+                  willChange: "transform"
                 }}
               >
                 <Image
                   src="/works/MYLOGO/150ppi/WHITE TRANSPARENT.png"
                   alt="VVENKYY Logo Boot"
-                  width={120} // Reduced from 160
-                  height={120} // Reduced from 160
+                  width={120}
+                  height={120}
                   priority
-                  className={`w-32 h-32 object-contain ${theme === 'light' ? 'invert' : ''}`} // Reduced from w-40 h-40
+                  className={`w-32 h-32 object-contain ${theme === 'light' ? 'invert' : ''}`}
                   style={{
-                    willChange: "transform" // Performance hint
+                    willChange: "transform"
                   }}
                 />
               </motion.div>
@@ -122,7 +152,7 @@ export default function BootAnimationClient({ children }: { children: React.Reac
           variants={contentVariants}
           style={{ 
             minHeight: "100vh",
-            willChange: "transform, opacity" // Performance hint
+            willChange: "transform, opacity"
           }}
         >
           {children}

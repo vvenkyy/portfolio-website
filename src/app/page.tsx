@@ -38,7 +38,7 @@ const butterStyle = `
 
 export default function Home() {
   const { theme, toggleTheme } = useContext(ThemeContext);
-  const { booted } = useContext(BootAnimationContext);
+  const { booted, bootProgress } = useContext(BootAnimationContext);
   const [titleSettled, setTitleSettled] = useState(false);
   const [navbarBooted, setNavbarBooted] = useState(false);
 
