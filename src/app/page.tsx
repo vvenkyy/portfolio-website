@@ -39,16 +39,25 @@ export default function Home() {
   const { booted } = useContext(BootAnimationContext);
   const [titleSettled, setTitleSettled] = useState(false);
   const [navbarBooted, setNavbarBooted] = useState(false);
+  const [isOldDevice, setIsOldDevice] = useState(false);
+
+  // Detect older devices that can't handle videos well
+  useEffect(() => {
+    const userAgent = navigator.userAgent;
+    const isIPhone8 = /iPhone.*OS 1[0-2]/.test(userAgent) || /iPhone.*OS 13/.test(userAgent);
+    const isOldDevice = isIPhone8 || /iPhone.*OS 1[0-4]/.test(userAgent);
+    setIsOldDevice(isOldDevice);
+  }, []);
 
   // Parallax for Hero background
   const heroRef = useRef(null);
   const { scrollY: heroScrollY } = useScroll({ target: heroRef });
-  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", "-28%"]);
+  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", isOldDevice ? "0%" : "-28%"]);
 
   // Parallax for About image
   const aboutImgRef = useRef(null);
   const { scrollY: aboutScrollY } = useScroll({ target: aboutImgRef });
-  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", "-20%"]);
+  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", isOldDevice ? "0%" : "-20%"]);
 
   const heroSectionRef = React.useRef<HTMLElement | null>(null);
   const aboutSectionRef = React.useRef<HTMLElement | null>(null);
@@ -122,23 +131,31 @@ export default function Home() {
     }
   }, [booted]);
 
-  // Force video autoplay on iPhone
+  // Force video autoplay on iPhone (only for newer devices)
   useEffect(() => {
+    if (isOldDevice) return; // Skip video handling for older devices
+    
     const videos = document.querySelectorAll('video');
     videos.forEach(video => {
-      // Simple autoplay attempt
-      video.play().catch(() => {
-        // If autoplay fails, try again on first user interaction
-        const handleInteraction = () => {
-          video.play().catch(() => {});
-          document.removeEventListener('touchstart', handleInteraction);
-          document.removeEventListener('click', handleInteraction);
-        };
-        document.addEventListener('touchstart', handleInteraction);
-        document.addEventListener('click', handleInteraction);
-      });
+      // Simple autoplay attempt with error handling
+      const playVideo = () => {
+        video.play().catch((error) => {
+          console.log('Video autoplay failed:', error);
+          // If autoplay fails, try again on first user interaction
+          const handleInteraction = () => {
+            video.play().catch(() => {});
+            document.removeEventListener('touchstart', handleInteraction);
+            document.removeEventListener('click', handleInteraction);
+          };
+          document.addEventListener('touchstart', handleInteraction);
+          document.addEventListener('click', handleInteraction);
+        });
+      };
+      
+      // Delay video play to prevent crashes
+      setTimeout(playVideo, 500);
     });
-  }, []);
+  }, [isOldDevice]);
 
   return (
     <main 
@@ -195,26 +212,41 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={booted ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : { opacity: 1 }}
         >
-          <video
-            src="/works/backdrop vid/background vid.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
-            webkit-playsinline="true"
-            x5-playsinline="true"
-            x5-video-player-type="h5"
-            x5-video-player-fullscreen="false"
-            preload="metadata"
-            className="w-full h-full object-cover"
-            style={{ 
-              position: 'absolute', 
-              inset: 0, 
-              filter: theme === 'light' ? 'invert(1) brightness(1.1) contrast(0.95)' : 'none',
-              WebkitTransform: 'translate3d(0,0,0)',
-              transform: 'translate3d(0,0,0)'
-            }}
-          />
+          {isOldDevice ? (
+            // Static background for older devices to prevent crashes
+            <div 
+              className="w-full h-full"
+              style={{
+                background: theme === 'light' 
+                  ? 'linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 50%, #d5d5d5 100%)'
+                  : 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #2a2a2a 100%)',
+                position: 'absolute',
+                inset: 0
+              }}
+            />
+          ) : (
+            // Video background for newer devices
+            <video
+              src="/works/backdrop vid/background vid.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              x5-video-player-type="h5"
+              x5-video-player-fullscreen="false"
+              preload="metadata"
+              className="w-full h-full object-cover"
+              style={{ 
+                position: 'absolute', 
+                inset: 0, 
+                filter: theme === 'light' ? 'invert(1) brightness(1.1) contrast(0.95)' : 'none',
+                WebkitTransform: 'translate3d(0,0,0)',
+                transform: 'translate3d(0,0,0)'
+              }}
+            />
+          )}
         </motion.div>
         {/* Cinematic Overlay */}
         <div
@@ -482,7 +514,7 @@ export default function Home() {
           ].map((s) => (
             <div key={s.name} className="flex flex-col items-center justify-center w-full px-4">
               <div className={`w-full max-w-[420px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}> 
-                {s.video ? (
+                {s.video && !isOldDevice ? (
                   <video
                     src={s.video}
                     autoPlay
@@ -503,7 +535,24 @@ export default function Home() {
                       transform: 'translate3d(0,0,0)'
                     }}
                   />
-                ) : null}
+                ) : (
+                  // Static background for older devices or when no video
+                  <div 
+                    className="w-full h-full rounded"
+                    style={{
+                      background: theme === 'light' 
+                        ? 'linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 100%)'
+                        : 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <span className={`text-lg font-bold ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
+                      {s.name}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="w-full max-w-[420px] text-center">
                 <div className={`text-2xl font-black mb-1 leading-tight ${theme === 'light' ? 'text-neutral-900' : 'text-white'}`}>{s.title}</div>
@@ -518,7 +567,7 @@ export default function Home() {
       </section>
       {/* Desktop Services Section */}
       <section className="scroll-mt-24 hidden md:block" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <StepRevealServices servicesSectionRef={servicesSectionRef} />
+        <StepRevealServices servicesSectionRef={servicesSectionRef} isOldDevice={isOldDevice} />
       </section>
 
       {/* Black spacer below works section */}
@@ -705,8 +754,11 @@ export default function Home() {
   );
 }
 
-type StepRevealServicesProps = { servicesSectionRef?: React.RefObject<HTMLDivElement | null> };
-function StepRevealServices({ servicesSectionRef }: StepRevealServicesProps) {
+type StepRevealServicesProps = { 
+  servicesSectionRef?: React.RefObject<HTMLDivElement | null>;
+  isOldDevice?: boolean;
+};
+function StepRevealServices({ servicesSectionRef, isOldDevice = false }: StepRevealServicesProps) {
   const { theme } = useContext(ThemeContext);
   // Example data
   type Service = {
@@ -792,7 +844,7 @@ function StepRevealServices({ servicesSectionRef }: StepRevealServicesProps) {
             style={{ opacity: i === active ? 1 : 0.3, transition: 'opacity 0.3s' }}
           >
             <div className={`w-full max-w-[520px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
-              {s.video ? (
+              {s.video && !isOldDevice ? (
                 <video
                   src={s.video}
                   autoPlay
@@ -813,7 +865,24 @@ function StepRevealServices({ servicesSectionRef }: StepRevealServicesProps) {
                     transform: 'translate3d(0,0,0)'
                   }}
                 />
-              ) : null}
+              ) : (
+                // Static background for older devices or when no video
+                <div 
+                  className="w-full h-full rounded"
+                  style={{
+                    background: theme === 'light' 
+                      ? 'linear-gradient(135deg, #f5f5f5 0%, #e5e5e5 100%)'
+                      : 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <span className={`text-lg font-bold ${theme === 'light' ? 'text-gray-600' : 'text-gray-300'}`}>
+                    {s.name}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="w-full max-w-[520px] text-left">
               <div className={`text-2xl md:text-3xl font-black mb-1 leading-tight ${theme === 'light' ? 'text-neutral-900' : 'text-white'}`}>{s.title}</div>
