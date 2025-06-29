@@ -148,12 +148,11 @@ function ButterButton({ children, className = '', as, href, ...props }: ButterBu
 export default function BrandingPage() {
   const { theme } = React.useContext(ThemeContext);
   return (
-    <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white text-black' : 'bg-black text-white'}`} style={{ WebkitOverflowScrolling: 'touch', WebkitTapHighlightColor: 'transparent' }}>
+    <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white text-black' : 'bg-black text-white'}`}>
       <Navbar />
       {/* Hero Section */}
       <motion.section
         className={`w-full flex flex-col items-center justify-start md:min-h-screen md:justify-center px-4 border-b border-neutral-800 relative overflow-hidden pt-2 md:pt-0 ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
-        style={{ WebkitOverflowScrolling: 'touch' }}
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.1, ease: 'easeOut' }}
@@ -180,7 +179,7 @@ export default function BrandingPage() {
         </motion.div>
       </motion.section>
       {/* Logos Presentations */}
-      <div className="flex flex-col gap-32 py-24 px-4 max-w-4xl mx-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex flex-col gap-32 py-24 px-4 max-w-4xl mx-auto">
         {LOGOS.map((logo, idx) => (
           <motion.section
             key={logo.slug}

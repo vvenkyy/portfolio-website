@@ -63,7 +63,7 @@ const GENERAL_POSTERS = [
 export default function PostersPage() {
   const { theme } = useContext(ThemeContext);
   return (
-    <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white text-black' : 'bg-background text-foreground'}`} style={{ WebkitOverflowScrolling: 'touch', WebkitTapHighlightColor: 'transparent' }}>
+    <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white text-black' : 'bg-background text-foreground'}`}>
       <Navbar />
       <h1 className="text-4xl md:text-6xl font-black text-accent mt-12 md:mt-20 mb-2 tracking-tight uppercase text-center drop-shadow-2xl">
         Client & Event Showcase
@@ -82,8 +82,8 @@ export default function PostersPage() {
           </svg>
         </motion.div>
       </div>
-      <div className="w-full max-w-6xl mx-auto flex flex-col items-center px-4" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="w-full max-w-6xl mx-auto flex flex-col items-center px-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 w-full">
           {CLIENT_FOLDERS.map((folder, idx) => (
             <motion.div
               key={folder.slug}
@@ -118,11 +118,11 @@ export default function PostersPage() {
             </motion.div>
           ))}
         </div>
-        <section className="w-full max-w-7xl mx-auto mt-24" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <section className="w-full max-w-7xl mx-auto mt-24">
           <h2 className="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#FE5500] via-orange-400 to-[#FE5500] drop-shadow-2xl tracking-tight uppercase text-center mt-20 mb-8">
             Personal Artistry Gallery
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {GENERAL_POSTERS.map((img) => (
               <div key={img} className={`w-full aspect-[3/4] rounded-none overflow-hidden flex items-center justify-center shadow-lg ${theme === 'light' ? 'bg-neutral-100' : 'bg-black'}`}>
                 <Image
@@ -150,8 +150,8 @@ export default function PostersPage() {
         </Link>
       </div>
       {/* Philosophy Section */}
-      <section className="w-full flex flex-col items-center justify-center mt-24 mb-12" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <div className="max-w-2xl text-center" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <section className="w-full flex flex-col items-center justify-center mt-24 mb-12">
+        <div className="max-w-2xl text-center">
           <div className={`text-2xl md:text-3xl font-black mb-4 drop-shadow-xl ${theme === 'light' ? 'text-neutral-900' : 'text-accent'}`}>"Design is the silent ambassador of vision."</div>
           <div className={`text-lg md:text-xl font-light leading-relaxed ${theme === 'light' ? 'text-neutral-700' : 'text-neutral-400'}`}>Every project, every poster, every pixel is a story—crafted to inspire, connect, and leave a mark. Creativity is not just what we do, it's who we are.</div>
         </div>
