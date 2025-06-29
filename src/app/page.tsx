@@ -277,20 +277,12 @@ export default function Home() {
               }}
             />
           ) : (
-            // Optimized video background with adaptive resolution
+            // Adaptive video with multiple sources
             <video
-              src={deviceCapability === 'high' 
-                ? "/works/backdrop vid/background vid.mp4" 
-                : "/works/backdrop vid/background vid_720p.mp4"
-              }
               autoPlay
               loop
               muted
               playsInline
-              webkit-playsinline="true"
-              x5-playsinline="true"
-              x5-video-player-type="h5"
-              x5-video-player-fullscreen="false"
               preload="metadata"
               className="w-full h-full object-cover"
               style={{ 
@@ -301,14 +293,12 @@ export default function Home() {
                 transform: 'translate3d(0,0,0)',
                 willChange: 'transform'
               }}
-              onLoadedMetadata={(e) => {
-                const video = e.target as HTMLVideoElement;
-                // Set playback rate to ensure 30fps
-                video.playbackRate = 1.0;
-                // Optimize for performance
-                video.style.transform = 'translate3d(0,0,0)';
-              }}
-            />
+            >
+              <source src="/works/backdrop vid/background vid_1080p.mp4" type="video/mp4" media="(min-width: 1200px)" />
+              <source src="/works/backdrop vid/background vid_720p.mp4" type="video/mp4" media="(min-width: 700px)" />
+              <source src="/works/backdrop vid/background vid_480p.mp4" type="video/mp4" media="(min-width: 400px)" />
+              <source src="/works/backdrop vid/background vid_360p.mp4" type="video/mp4" />
+            </video>
           )}
         </motion.div>
         {/* Cinematic Overlay */}
@@ -591,18 +581,10 @@ export default function Home() {
               <div className={`w-full max-w-[420px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}> 
                 {s.video && deviceCapability !== 'low' ? (
                   <video
-                    src={deviceCapability === 'high' 
-                      ? s.video 
-                      : s.video.replace('.mp4', '_720p.mp4')
-                    }
                     autoPlay
                     loop
                     muted
                     playsInline
-                    webkit-playsinline="true"
-                    x5-playsinline="true"
-                    x5-video-player-type="h5"
-                    x5-video-player-fullscreen="false"
                     preload="metadata"
                     className="w-full h-full object-cover rounded"
                     style={{ 
@@ -612,12 +594,12 @@ export default function Home() {
                       transform: 'translate3d(0,0,0)',
                       willChange: 'transform'
                     }}
-                    onLoadedMetadata={(e) => {
-                      const video = e.target as HTMLVideoElement;
-                      video.playbackRate = 1.0;
-                      video.style.transform = 'translate3d(0,0,0)';
-                    }}
-                  />
+                  >
+                    <source src={s.video.replace('.mp4', '_1080p.mp4')} type="video/mp4" media="(min-width: 1200px)" />
+                    <source src={s.video.replace('.mp4', '_720p.mp4')} type="video/mp4" media="(min-width: 700px)" />
+                    <source src={s.video.replace('.mp4', '_480p.mp4')} type="video/mp4" media="(min-width: 400px)" />
+                    <source src={s.video.replace('.mp4', '_360p.mp4')} type="video/mp4" />
+                  </video>
                 ) : (
                   // Static background for low-end devices
                   <div 
@@ -929,18 +911,10 @@ function StepRevealServices({ servicesSectionRef, deviceCapability = 'high' }: S
             <div className={`w-full max-w-[520px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
               {s.video && deviceCapability !== 'low' ? (
                 <video
-                  src={deviceCapability === 'high' 
-                    ? s.video 
-                    : s.video.replace('.mp4', '_720p.mp4')
-                  }
                   autoPlay
                   loop
                   muted
                   playsInline
-                  webkit-playsinline="true"
-                  x5-playsinline="true"
-                  x5-video-player-type="h5"
-                  x5-video-player-fullscreen="false"
                   preload="metadata"
                   className="w-full h-full object-cover rounded"
                   style={{ 
@@ -950,12 +924,12 @@ function StepRevealServices({ servicesSectionRef, deviceCapability = 'high' }: S
                     transform: 'translate3d(0,0,0)',
                     willChange: 'transform'
                   }}
-                  onLoadedMetadata={(e) => {
-                    const video = e.target as HTMLVideoElement;
-                    video.playbackRate = 1.0;
-                    video.style.transform = 'translate3d(0,0,0)';
-                  }}
-                />
+                >
+                  <source src={s.video.replace('.mp4', '_1080p.mp4')} type="video/mp4" media="(min-width: 1200px)" />
+                  <source src={s.video.replace('.mp4', '_720p.mp4')} type="video/mp4" media="(min-width: 700px)" />
+                  <source src={s.video.replace('.mp4', '_480p.mp4')} type="video/mp4" media="(min-width: 400px)" />
+                  <source src={s.video.replace('.mp4', '_360p.mp4')} type="video/mp4" />
+                </video>
               ) : (
                 // Static background for low-end devices
                 <div 
