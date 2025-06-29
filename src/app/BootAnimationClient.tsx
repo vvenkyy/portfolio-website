@@ -10,37 +10,59 @@ export default function BootAnimationClient({ children }: { children: React.Reac
   const [phase, setPhase] = useState<"idle" | "transition" | "done">("idle");
   const { theme } = useContext(ThemeContext);
 
-  // Start transition after idle period
+  // Reduced timing for better performance
   useEffect(() => {
     if (phase === "idle") {
-      const timeout = setTimeout(() => setPhase("transition"), 1200);
+      const timeout = setTimeout(() => setPhase("transition"), 800); // Reduced from 1200ms
       return () => clearTimeout(timeout);
     }
     if (phase === "transition") {
-      const timeout = setTimeout(() => setPhase("done"), 900);
+      const timeout = setTimeout(() => setPhase("done"), 600); // Reduced from 900ms
       return () => clearTimeout(timeout);
     }
   }, [phase]);
 
-  // Logo animation: floating in idle, then move up and scale up off screen in transition
+  // Simplified logo animation with reduced complexity
   const logoVariants = {
     idle: {
-      y: [0, -16, 0, 16, 0],
+      y: [0, -8, 0, 8, 0], // Reduced movement range
       scale: 1,
-      transition: { duration: 2.4, repeat: Infinity, ease: "easeInOut" as const },
+      transition: { 
+        duration: 1.8, // Reduced from 2.4s
+        repeat: Infinity, 
+        ease: "easeInOut" as const,
+        times: [0, 0.25, 0.5, 0.75, 1] // More efficient timing
+      },
     },
     transition: {
-      y: "-80vh",
-      scale: 1,
-      transition: { duration: 0.9, ease: "easeInOut" as const },
+      y: "-60vh", // Reduced movement distance
+      scale: 1.2, // Slight scale for visual interest
+      transition: { 
+        duration: 0.6, // Reduced from 0.9s
+        ease: "easeInOut" as const 
+      },
     },
-    done: { y: "-80vh", scale: 1 },
+    done: { 
+      y: "-60vh", 
+      scale: 1.2,
+      transition: { duration: 0.1 } // Quick final state
+    },
   };
 
-  // Content animation: hidden, then slide up as logo moves (no fade)
+  // Simplified content animation
   const contentVariants = {
-    hidden: { y: "100vh" },
-    visible: { y: 0, transition: { duration: 0.9, ease: "easeInOut" as const } },
+    hidden: { 
+      y: "60vh", // Reduced movement distance
+      opacity: 0 
+    },
+    visible: { 
+      y: 0, 
+      opacity: 1,
+      transition: { 
+        duration: 0.6, // Reduced from 0.9s
+        ease: "easeOut" as const // Changed to easeOut for better performance
+      } 
+    },
   };
 
   const booted = phase === "done";
@@ -48,29 +70,47 @@ export default function BootAnimationClient({ children }: { children: React.Reac
   return (
     <BootAnimationContext.Provider value={{ booted }}>
       <>
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {phase !== "done" && (
             <motion.div
               className={`fixed inset-0 z-[9999] flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
               initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.5, delay: 0.1 } }}
-              style={{ pointerEvents: "all" }}
+              exit={{ 
+                opacity: 0, 
+                transition: { 
+                  duration: 0.3, // Reduced from 0.5s
+                  delay: 0.05 // Reduced delay
+                } 
+              }}
+              style={{ 
+                pointerEvents: "all",
+                willChange: "opacity" // Performance hint
+              }}
             >
               <motion.div
                 variants={logoVariants}
                 animate={phase}
                 initial="idle"
                 className="flex items-center justify-center"
-                style={{ position: "absolute", left: 0, right: 0, margin: "auto" }}
+                style={{ 
+                  position: "absolute", 
+                  left: 0, 
+                  right: 0, 
+                  margin: "auto",
+                  willChange: "transform" // Performance hint
+                }}
               >
                 <Image
                   src="/works/MYLOGO/150ppi/WHITE TRANSPARENT.png"
                   alt="VVENKYY Logo Boot"
-                  width={160}
-                  height={160}
+                  width={120} // Reduced from 160
+                  height={120} // Reduced from 160
                   priority
-                  className={`w-40 h-40 object-contain ${theme === 'light' ? 'invert' : ''}`}
+                  className={`w-32 h-32 object-contain ${theme === 'light' ? 'invert' : ''}`} // Reduced from w-40 h-40
+                  style={{
+                    willChange: "transform" // Performance hint
+                  }}
                 />
               </motion.div>
             </motion.div>
@@ -80,7 +120,10 @@ export default function BootAnimationClient({ children }: { children: React.Reac
           initial="hidden"
           animate={booted ? "visible" : "hidden"}
           variants={contentVariants}
-          style={{ minHeight: "100vh" }}
+          style={{ 
+            minHeight: "100vh",
+            willChange: "transform, opacity" // Performance hint
+          }}
         >
           {children}
         </motion.div>

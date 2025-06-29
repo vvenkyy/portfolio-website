@@ -7,6 +7,8 @@ import Image from "next/image";
 import React from "react";
 import Navbar from "./Navbar";
 import { BootAnimationContext } from "./BootAnimationClient";
+import OptimizedVideo from "./components/OptimizedVideo";
+import OptimizedImage from "./components/OptimizedImage";
 
 // Butter fill animation styles
 const butterStyle = `
@@ -163,7 +165,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={booted ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : {}}
         >
-          <video
+          <OptimizedVideo
             src="/works/backdrop vid/background vid.mp4"
             autoPlay
             loop
@@ -171,6 +173,10 @@ export default function Home() {
             playsInline
             className="w-full h-full object-cover"
             style={{ position: 'absolute', inset: 0, filter: theme === 'light' ? 'invert(1) brightness(1.1) contrast(0.95)' : 'none' }}
+            quality="medium"
+            preload="metadata"
+            maxWidth={1920}
+            maxHeight={1080}
           />
         </motion.div>
         {/* Cinematic Overlay */}
@@ -440,7 +446,7 @@ export default function Home() {
             <div key={s.name} className="flex flex-col items-center justify-center w-full px-4">
               <div className={`w-full max-w-[420px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}> 
                 {s.video ? (
-                  <video
+                  <OptimizedVideo
                     src={s.video}
                     autoPlay
                     loop
@@ -448,6 +454,10 @@ export default function Home() {
                     playsInline
                     className="w-full h-full object-cover rounded"
                     style={{ maxWidth: '100%', maxHeight: '100%' }}
+                    quality="low"
+                    preload="metadata"
+                    maxWidth={420}
+                    maxHeight={315}
                   />
                 ) : null}
               </div>
@@ -736,7 +746,7 @@ function StepRevealServices({ servicesSectionRef }: StepRevealServicesProps) {
           >
             <div className={`w-full max-w-[520px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
               {s.video ? (
-                <video
+                <OptimizedVideo
                   src={s.video}
                   autoPlay
                   loop
@@ -744,6 +754,10 @@ function StepRevealServices({ servicesSectionRef }: StepRevealServicesProps) {
                   playsInline
                   className="w-full h-full object-cover rounded"
                   style={{ maxWidth: '100%', maxHeight: '100%' }}
+                  quality="medium"
+                  preload="metadata"
+                  maxWidth={520}
+                  maxHeight={390}
                 />
               ) : null}
             </div>

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import React from "react";
 import { ThemeContext } from "../ThemeProvider";
 import Link from "next/link";
+import OptimizedVideo from "../components/OptimizedVideo";
 
 function BrowserMockup({ src, title }: { src: string; title: string }) {
   const { theme } = React.useContext(ThemeContext);
@@ -98,7 +99,7 @@ export default function WebDevPage() {
         {/* Fullscreen 16:9 Video */}
         <div className={`w-full flex justify-center items-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
           <div className="w-full max-w-7xl aspect-[16/9] overflow-hidden flex items-center justify-center">
-            <video
+            <OptimizedVideo
               src="/works/websites/enhanced rhealthcity.mp4"
               autoPlay
               loop
@@ -106,6 +107,10 @@ export default function WebDevPage() {
               playsInline
               className="w-full h-full object-cover"
               style={{ aspectRatio: '16/9' }}
+              quality="medium"
+              preload="metadata"
+              maxWidth={1920}
+              maxHeight={1080}
             />
           </div>
         </div>
@@ -196,7 +201,7 @@ export default function WebDevPage() {
         {/* Fullscreen 16:9 Video */}
         <div className={`w-full flex justify-center items-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
           <div className="w-full max-w-7xl aspect-[16/9] overflow-hidden flex items-center justify-center">
-            <video
+            <OptimizedVideo
               src="/works/websites/enhanced void.mp4"
               autoPlay
               loop
@@ -204,6 +209,10 @@ export default function WebDevPage() {
               playsInline
               className="w-full h-full object-cover"
               style={{ aspectRatio: '16/9' }}
+              quality="medium"
+              preload="metadata"
+              maxWidth={1920}
+              maxHeight={1080}
             />
           </div>
         </div>

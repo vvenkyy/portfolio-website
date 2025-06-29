@@ -6,6 +6,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ThemeContext } from "../ThemeProvider";
+import OptimizedVideo from "../components/OptimizedVideo";
+import OptimizedImage from "../components/OptimizedImage";
 
 const screenshots = [
   {
@@ -111,8 +113,7 @@ export default function AppDevPage() {
       {/* Video Section (no border lines, no scroll animation) */}
       <section className={`w-full flex justify-center items-center mb-16 ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
         <div className="w-full max-w-7xl aspect-[16/9] overflow-hidden flex items-center justify-center">
-          <video
-            ref={videoRef}
+          <OptimizedVideo
             src="/works/app developement/enhanced vid.mp4"
             autoPlay
             loop
@@ -120,6 +121,10 @@ export default function AppDevPage() {
             playsInline
             className="w-full h-full object-cover"
             style={{ aspectRatio: '16/9' }}
+            quality="medium"
+            preload="metadata"
+            maxWidth={1920}
+            maxHeight={1080}
           />
         </div>
       </section>
@@ -138,13 +143,14 @@ export default function AppDevPage() {
             >
               <div className="flex justify-start items-center md:justify-start">
                 <div className={`w-[22rem] h-[38rem] overflow-hidden flex-shrink-0 flex justify-center items-center ${theme === 'light' ? 'bg-neutral-100' : 'bg-neutral-900'}`} style={{ borderRadius: 0 }}>
-                  <Image
+                  <OptimizedImage
                     src={shot.src}
                     alt={shot.title}
                     width={700}
                     height={1200}
                     className="w-full h-full object-cover"
                     priority={idx === 0}
+                    quality={70}
                   />
                 </div>
               </div>
