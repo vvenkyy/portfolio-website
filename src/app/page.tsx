@@ -122,6 +122,27 @@ export default function Home() {
     }
   }, [booted]);
 
+  // Force video autoplay on iPhone
+  useEffect(() => {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+      // Force play on iPhone
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Auto-play was prevented, try again on user interaction
+          const handleUserInteraction = () => {
+            video.play().catch(() => {});
+            document.removeEventListener('touchstart', handleUserInteraction);
+            document.removeEventListener('click', handleUserInteraction);
+          };
+          document.addEventListener('touchstart', handleUserInteraction);
+          document.addEventListener('click', handleUserInteraction);
+        });
+      }
+    });
+  }, []);
+
   return (
     <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white' : 'bg-background'} text-foreground`} style={{ WebkitOverflowScrolling: 'touch', WebkitTapHighlightColor: 'transparent' }}>
       {/* Reserve space for sticky navbar to prevent layout shift */}
@@ -177,7 +198,8 @@ export default function Home() {
             x5-playsinline="true"
             x5-video-player-type="h5"
             x5-video-player-fullscreen="false"
-            preload="auto"
+            preload="metadata"
+            poster=""
             className="w-full h-full object-cover"
             style={{ 
               position: 'absolute', 
@@ -465,7 +487,8 @@ export default function Home() {
                     x5-playsinline="true"
                     x5-video-player-type="h5"
                     x5-video-player-fullscreen="false"
-                    preload="auto"
+                    preload="metadata"
+                    poster=""
                     className="w-full h-full object-cover rounded"
                     style={{ 
                       maxWidth: '100%', 
@@ -774,7 +797,8 @@ function StepRevealServices({ servicesSectionRef }: StepRevealServicesProps) {
                   x5-playsinline="true"
                   x5-video-player-type="h5"
                   x5-video-player-fullscreen="false"
-                  preload="auto"
+                  preload="metadata"
+                  poster=""
                   className="w-full h-full object-cover rounded"
                   style={{ 
                     maxWidth: '100%', 
