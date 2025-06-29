@@ -39,29 +39,46 @@ export default function Home() {
   const { booted } = useContext(BootAnimationContext);
   const [titleSettled, setTitleSettled] = useState(false);
   const [navbarBooted, setNavbarBooted] = useState(false);
-  const [isOldDevice, setIsOldDevice] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [deviceCapability, setDeviceCapability] = useState('high'); // high, medium, low
 
-  // Detect mobile devices and older devices for performance optimization
+  // Detect device capability for video optimization
   useEffect(() => {
-    const userAgent = navigator.userAgent;
-    const isIPhone8 = /iPhone.*OS 1[0-2]/.test(userAgent) || /iPhone.*OS 13/.test(userAgent);
-    const isOldDevice = isIPhone8 || /iPhone.*OS 1[0-4]/.test(userAgent);
-    const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+    const detectDeviceCapability = () => {
+      const userAgent = navigator.userAgent;
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+      
+      if (isMobile) {
+        // Check for high-end mobile devices
+        const isHighEndMobile = /iPhone.*OS 1[5-7]|Android.*Chrome\/[8-9]|Android.*Samsung.*Galaxy.*S2[0-9]|Android.*OnePlus.*[8-9]|Android.*Pixel.*[4-7]/i.test(userAgent);
+        
+        // Check for low-end devices
+        const isLowEndDevice = /iPhone.*OS 1[0-2]|Android.*Chrome\/[5-7]|Android.*Samsung.*Galaxy.*[A-J]|Android.*Redmi.*[1-5]|Android.*POCO.*[1-3]/i.test(userAgent);
+        
+        if (isHighEndMobile) {
+          setDeviceCapability('high');
+        } else if (isLowEndDevice) {
+          setDeviceCapability('low');
+        } else {
+          setDeviceCapability('medium');
+        }
+      } else {
+        // Desktop devices
+        setDeviceCapability('high');
+      }
+    };
     
-    setIsOldDevice(isOldDevice);
-    setIsMobile(isMobileDevice);
+    detectDeviceCapability();
   }, []);
 
-  // Parallax for Hero background (disabled on mobile for performance)
+  // Parallax for Hero background
   const heroRef = useRef(null);
   const { scrollY: heroScrollY } = useScroll({ target: heroRef });
-  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", isMobile ? "0%" : "-28%"]);
+  const heroBgY = useTransform(heroScrollY, [0, 600], ["0%", "-28%"]);
 
-  // Parallax for About image (disabled on mobile for performance)
+  // Parallax for About image
   const aboutImgRef = useRef(null);
   const { scrollY: aboutScrollY } = useScroll({ target: aboutImgRef });
-  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", isMobile ? "0%" : "-20%"]);
+  const aboutImgY = useTransform(aboutScrollY, [0, 400], ["0%", "-20%"]);
 
   const heroSectionRef = React.useRef<HTMLElement | null>(null);
   const aboutSectionRef = React.useRef<HTMLElement | null>(null);
@@ -135,31 +152,51 @@ export default function Home() {
     }
   }, [booted]);
 
-  // Force video autoplay on iPhone (only for desktop devices)
+  // Force video autoplay with optimization for smooth 30fps playback
   useEffect(() => {
-    if (isMobile || isOldDevice) return; // Skip video handling for mobile and older devices
+    if (deviceCapability === 'low') return; // Skip video handling for low-end devices
     
     const videos = document.querySelectorAll('video');
     videos.forEach(video => {
-      // Simple autoplay attempt with error handling
-      const playVideo = () => {
-        video.play().catch((error) => {
-          console.log('Video autoplay failed:', error);
-          // If autoplay fails, try again on first user interaction
-          const handleInteraction = () => {
-            video.play().catch(() => {});
-            document.removeEventListener('touchstart', handleInteraction);
-            document.removeEventListener('click', handleInteraction);
-          };
-          document.addEventListener('touchstart', handleInteraction);
-          document.addEventListener('click', handleInteraction);
-        });
+      // Optimize video for smooth playback
+      const optimizeVideo = () => {
+        // Set playback rate to ensure 30fps
+        video.playbackRate = 1.0;
+        
+        // Enable hardware acceleration
+        video.style.transform = 'translate3d(0,0,0)';
+        video.style.willChange = 'transform';
+        
+        // Set video quality based on device capability
+        if (deviceCapability === 'medium') {
+          // Use 720p for medium devices
+          const currentSrc = video.src;
+          if (currentSrc && !currentSrc.includes('_720p')) {
+            video.src = currentSrc.replace('.mp4', '_720p.mp4');
+          }
+        }
+        
+        // Attempt to play with error handling
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.log('Video autoplay failed:', error);
+            // If autoplay fails, try again on first user interaction
+            const handleInteraction = () => {
+              video.play().catch(() => {});
+              document.removeEventListener('touchstart', handleInteraction);
+              document.removeEventListener('click', handleInteraction);
+            };
+            document.addEventListener('touchstart', handleInteraction);
+            document.addEventListener('click', handleInteraction);
+          });
+        }
       };
       
-      // Delay video play to prevent crashes
-      setTimeout(playVideo, 500);
+      // Delay video optimization to prevent crashes
+      setTimeout(optimizeVideo, 1000);
     });
-  }, [isMobile, isOldDevice]);
+  }, [deviceCapability]);
 
   return (
     <main 
@@ -209,7 +246,7 @@ export default function Home() {
         initial="offscreen"
         whileInView="onscreen"
         exit="exit"
-        variants={isMobile ? {
+        variants={deviceCapability === 'low' ? {
           offscreen: { opacity: 0 },
           onscreen: { opacity: 1, transition: { duration: 0.5 } },
           exit: { opacity: 0, transition: { duration: 0.3 } }
@@ -227,8 +264,8 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={booted ? { opacity: 1, transition: { delay: 3.2, duration: 1.2, ease: "easeInOut" } } : { opacity: 1 }}
         >
-          {isMobile || isOldDevice ? (
-            // Static background for mobile and older devices to prevent crashes
+          {deviceCapability === 'low' ? (
+            // Static background for low-end devices
             <div 
               className="w-full h-full"
               style={{
@@ -240,9 +277,12 @@ export default function Home() {
               }}
             />
           ) : (
-            // Video background only for desktop devices
+            // Optimized video background with adaptive resolution
             <video
-              src="/works/backdrop vid/background vid.mp4"
+              src={deviceCapability === 'high' 
+                ? "/works/backdrop vid/background vid.mp4" 
+                : "/works/backdrop vid/background vid_720p.mp4"
+              }
               autoPlay
               loop
               muted
@@ -258,7 +298,15 @@ export default function Home() {
                 inset: 0, 
                 filter: theme === 'light' ? 'invert(1) brightness(1.1) contrast(0.95)' : 'none',
                 WebkitTransform: 'translate3d(0,0,0)',
-                transform: 'translate3d(0,0,0)'
+                transform: 'translate3d(0,0,0)',
+                willChange: 'transform'
+              }}
+              onLoadedMetadata={(e) => {
+                const video = e.target as HTMLVideoElement;
+                // Set playback rate to ensure 30fps
+                video.playbackRate = 1.0;
+                // Optimize for performance
+                video.style.transform = 'translate3d(0,0,0)';
               }}
             />
           )}
@@ -364,7 +412,7 @@ export default function Home() {
         initial="offscreen"
         whileInView="onscreen"
         exit="exit"
-        variants={isMobile ? {
+        variants={deviceCapability === 'low' ? {
           offscreen: { opacity: 0 },
           onscreen: { opacity: 1, transition: { duration: 0.5 } },
           exit: { opacity: 0, transition: { duration: 0.3 } }
@@ -541,9 +589,12 @@ export default function Home() {
           ].map((s) => (
             <div key={s.name} className="flex flex-col items-center justify-center w-full px-4">
               <div className={`w-full max-w-[420px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}> 
-                {s.video && !isMobile && !isOldDevice ? (
+                {s.video && deviceCapability !== 'low' ? (
                   <video
-                    src={s.video}
+                    src={deviceCapability === 'high' 
+                      ? s.video 
+                      : s.video.replace('.mp4', '_720p.mp4')
+                    }
                     autoPlay
                     loop
                     muted
@@ -553,17 +604,22 @@ export default function Home() {
                     x5-video-player-type="h5"
                     x5-video-player-fullscreen="false"
                     preload="metadata"
-                    poster=""
                     className="w-full h-full object-cover rounded"
                     style={{ 
                       maxWidth: '100%', 
                       maxHeight: '100%',
                       WebkitTransform: 'translate3d(0,0,0)',
-                      transform: 'translate3d(0,0,0)'
+                      transform: 'translate3d(0,0,0)',
+                      willChange: 'transform'
+                    }}
+                    onLoadedMetadata={(e) => {
+                      const video = e.target as HTMLVideoElement;
+                      video.playbackRate = 1.0;
+                      video.style.transform = 'translate3d(0,0,0)';
                     }}
                   />
                 ) : (
-                  // Static background for mobile devices or when no video
+                  // Static background for low-end devices
                   <div 
                     className="w-full h-full rounded"
                     style={{
@@ -594,7 +650,7 @@ export default function Home() {
       </section>
       {/* Desktop Services Section */}
       <section className="scroll-mt-24 hidden md:block" style={{ WebkitOverflowScrolling: 'touch' }}>
-        <StepRevealServices servicesSectionRef={servicesSectionRef} isOldDevice={isOldDevice} isMobile={isMobile} />
+        <StepRevealServices servicesSectionRef={servicesSectionRef} deviceCapability={deviceCapability} />
       </section>
 
       {/* Black spacer below works section */}
@@ -783,10 +839,9 @@ export default function Home() {
 
 type StepRevealServicesProps = { 
   servicesSectionRef?: React.RefObject<HTMLDivElement | null>;
-  isOldDevice?: boolean;
-  isMobile?: boolean;
+  deviceCapability?: string;
 };
-function StepRevealServices({ servicesSectionRef, isOldDevice = false, isMobile = false }: StepRevealServicesProps) {
+function StepRevealServices({ servicesSectionRef, deviceCapability = 'high' }: StepRevealServicesProps) {
   const { theme } = useContext(ThemeContext);
   // Example data
   type Service = {
@@ -872,9 +927,12 @@ function StepRevealServices({ servicesSectionRef, isOldDevice = false, isMobile 
             style={{ opacity: i === active ? 1 : 0.3, transition: 'opacity 0.3s' }}
           >
             <div className={`w-full max-w-[520px] aspect-[4/3] mb-4 flex items-center justify-center ${theme === 'light' ? 'bg-white' : 'bg-black'}`}>
-              {s.video && !isMobile && !isOldDevice ? (
+              {s.video && deviceCapability !== 'low' ? (
                 <video
-                  src={s.video}
+                  src={deviceCapability === 'high' 
+                    ? s.video 
+                    : s.video.replace('.mp4', '_720p.mp4')
+                  }
                   autoPlay
                   loop
                   muted
@@ -884,17 +942,22 @@ function StepRevealServices({ servicesSectionRef, isOldDevice = false, isMobile 
                   x5-video-player-type="h5"
                   x5-video-player-fullscreen="false"
                   preload="metadata"
-                  poster=""
                   className="w-full h-full object-cover rounded"
                   style={{ 
                     maxWidth: '100%', 
                     maxHeight: '100%',
                     WebkitTransform: 'translate3d(0,0,0)',
-                    transform: 'translate3d(0,0,0)'
+                    transform: 'translate3d(0,0,0)',
+                    willChange: 'transform'
+                  }}
+                  onLoadedMetadata={(e) => {
+                    const video = e.target as HTMLVideoElement;
+                    video.playbackRate = 1.0;
+                    video.style.transform = 'translate3d(0,0,0)';
                   }}
                 />
               ) : (
-                // Static background for mobile devices or when no video
+                // Static background for low-end devices
                 <div 
                   className="w-full h-full rounded"
                   style={{
