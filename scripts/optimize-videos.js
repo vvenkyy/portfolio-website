@@ -1,135 +1,141 @@
+const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
-// Video optimization script
-// This script will create optimized versions of videos for better performance
-
-const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv'];
-const inputDir = path.join(__dirname, '../public/works');
-const outputDir = path.join(__dirname, '../public/works/optimized');
-
-// Create output directory if it doesn't exist
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir, { recursive: true });
-}
-
-// Video quality presets
-const presets = {
+// Video optimization settings for better performance
+const optimizationSettings = {
+  // Low quality for mobile/performance mode
   low: {
     resolution: '1280x720',
     bitrate: '800k',
-    fps: '30',
+    framerate: '24',
+    codec: 'libx264',
+    preset: 'fast',
     crf: '28'
   },
+  // Medium quality for standard devices
   medium: {
     resolution: '1920x1080',
     bitrate: '1500k',
-    fps: '30',
+    framerate: '30',
+    codec: 'libx264',
+    preset: 'medium',
     crf: '23'
   },
+  // High quality for high-end devices
   high: {
     resolution: '1920x1080',
     bitrate: '2500k',
-    fps: '30',
+    framerate: '30',
+    codec: 'libx264',
+    preset: 'slow',
+    crf: '18'
+  }
+};
+
+// WebM optimization for better compression
+const webmSettings = {
+  low: {
+    resolution: '1280x720',
+    bitrate: '600k',
+    framerate: '24',
+    codec: 'libvpx-vp9',
+    crf: '32'
+  },
+  medium: {
+    resolution: '1920x1080',
+    bitrate: '1200k',
+    framerate: '30',
+    codec: 'libvpx-vp9',
+    crf: '25'
+  },
+  high: {
+    resolution: '1920x1080',
+    bitrate: '2000k',
+    framerate: '30',
+    codec: 'libvpx-vp9',
     crf: '20'
   }
 };
 
-function findVideos(dir) {
-  const videos = [];
+function optimizeVideo(inputPath, outputPath, quality = 'medium', format = 'mp4') {
+  const settings = format === 'webm' ? webmSettings[quality] : optimizationSettings[quality];
   
-  function scanDirectory(currentDir) {
-    const items = fs.readdirSync(currentDir);
-    
-    for (const item of items) {
-      const fullPath = path.join(currentDir, item);
-      const stat = fs.statSync(fullPath);
-      
-      if (stat.isDirectory()) {
-        scanDirectory(fullPath);
-      } else if (videoExtensions.includes(path.extname(item).toLowerCase())) {
-        videos.push(fullPath);
-      }
-    }
+  let command;
+  
+  if (format === 'webm') {
+    command = `ffmpeg -i "${inputPath}" -c:v ${settings.codec} -b:v ${settings.bitrate} -crf ${settings.crf} -vf "scale=${settings.resolution}:force_original_aspect_ratio=decrease,pad=${settings.resolution}:(ow-iw)/2:(oh-ih)/2" -r ${settings.framerate} -c:a aac -b:a 128k -movflags +faststart -y "${outputPath}"`;
+  } else {
+    command = `ffmpeg -i "${inputPath}" -c:v ${settings.codec} -preset ${settings.preset} -crf ${settings.crf} -b:v ${settings.bitrate} -vf "scale=${settings.resolution}:force_original_aspect_ratio=decrease,pad=${settings.resolution}:(ow-iw)/2:(oh-ih)/2" -r ${settings.framerate} -c:a aac -b:a 128k -movflags +faststart -y "${outputPath}"`;
   }
   
-  scanDirectory(dir);
-  return videos;
+  try {
+    console.log(`Optimizing ${inputPath} to ${outputPath} (${quality} quality, ${format} format)`);
+    execSync(command, { stdio: 'inherit' });
+    console.log(`✅ Optimized: ${outputPath}`);
+  } catch (error) {
+    console.error(`❌ Failed to optimize ${inputPath}:`, error.message);
+  }
 }
 
-function optimizeVideo(inputPath, quality = 'medium') {
-  const preset = presets[quality];
-  const relativePath = path.relative(inputDir, inputPath);
-  const outputPath = path.join(outputDir, relativePath);
-  const outputDirPath = path.dirname(outputPath);
+function createOptimizedVersions(inputPath, outputDir) {
+  const filename = path.basename(inputPath, path.extname(inputPath));
   
-  // Create output directory structure
-  if (!fs.existsSync(outputDirPath)) {
-    fs.mkdirSync(outputDirPath, { recursive: true });
-  }
+  // Create optimized versions for different qualities
+  const qualities = ['low', 'medium', 'high'];
+  const formats = ['mp4', 'webm'];
   
-  // Skip if output already exists
-  if (fs.existsSync(outputPath)) {
-    console.log(`Skipping ${relativePath} - already optimized`);
+  qualities.forEach(quality => {
+    formats.forEach(format => {
+      const outputPath = path.join(outputDir, `${filename}-${quality}.${format}`);
+      optimizeVideo(inputPath, outputPath, quality, format);
+    });
+  });
+}
+
+function processDirectory(dirPath) {
+  const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
+  
+  if (!fs.existsSync(dirPath)) {
+    console.log(`Directory not found: ${dirPath}`);
     return;
   }
   
-  const ffmpegCommand = [
-    'ffmpeg',
-    '-i', `"${inputPath}"`,
-    '-c:v', 'libx264',
-    '-preset', 'medium',
-    '-crf', preset.crf,
-    '-b:v', preset.bitrate,
-    '-maxrate', preset.bitrate,
-    '-bufsize', `${parseInt(preset.bitrate) * 2}k`,
-    '-vf', `scale=${preset.resolution}:force_original_aspect_ratio=decrease`,
-    '-r', preset.fps,
-    '-c:a', 'aac',
-    '-b:a', '128k',
-    '-movflags', '+faststart',
-    '-y',
-    `"${outputPath}"`
-  ].join(' ');
+  const items = fs.readdirSync(dirPath);
   
-  try {
-    console.log(`Optimizing ${relativePath}...`);
-    execSync(ffmpegCommand, { stdio: 'inherit' });
-    console.log(`✓ Optimized ${relativePath}`);
-  } catch (error) {
-    console.error(`✗ Failed to optimize ${relativePath}:`, error.message);
-  }
-}
-
-function main() {
-  console.log('🎬 Starting video optimization...');
-  
-  const videos = findVideos(inputDir);
-  console.log(`Found ${videos.length} videos to optimize`);
-  
-  for (const video of videos) {
-    // Determine quality based on video location
-    let quality = 'medium';
+  items.forEach(item => {
+    const fullPath = path.join(dirPath, item);
+    const stat = fs.statSync(fullPath);
     
-    if (video.includes('backdrop vid')) {
-      quality = 'low'; // Background videos can be lower quality
-    } else if (video.includes('enhanced')) {
-      quality = 'medium'; // Enhanced videos keep medium quality
-    } else if (video.includes('MAIN VID') || video.includes('enhanced')) {
-      quality = 'high'; // Main videos get high quality
+    if (stat.isDirectory()) {
+      // Create optimized subdirectory
+      const optimizedDir = path.join(dirPath, 'optimized', item);
+      if (!fs.existsSync(optimizedDir)) {
+        fs.mkdirSync(optimizedDir, { recursive: true });
+      }
+      processDirectory(fullPath);
+    } else if (videoExtensions.includes(path.extname(item).toLowerCase())) {
+      // Create optimized directory for videos
+      const optimizedDir = path.join(dirPath, 'optimized');
+      if (!fs.existsSync(optimizedDir)) {
+        fs.mkdirSync(optimizedDir, { recursive: true });
+      }
+      
+      createOptimizedVersions(fullPath, optimizedDir);
     }
-    
-    optimizeVideo(video, quality);
-  }
-  
-  console.log('✅ Video optimization complete!');
-  console.log(`Optimized videos saved to: ${outputDir}`);
+  });
 }
 
-// Run the script
-if (require.main === module) {
-  main();
-}
+// Main execution
+const publicDir = path.join(__dirname, '..', 'public');
+const worksDir = path.join(publicDir, 'works');
 
-module.exports = { optimizeVideo, findVideos }; 
+console.log('🎬 Starting video optimization...');
+console.log('📁 Processing directory:', worksDir);
+
+if (fs.existsSync(worksDir)) {
+  processDirectory(worksDir);
+  console.log('✅ Video optimization completed!');
+} else {
+  console.log('❌ Works directory not found');
+} 

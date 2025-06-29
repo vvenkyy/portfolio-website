@@ -177,6 +177,7 @@ export default function Home() {
             preload="metadata"
             maxWidth={1920}
             maxHeight={1080}
+            priority={true}
           />
         </motion.div>
         {/* Cinematic Overlay */}
