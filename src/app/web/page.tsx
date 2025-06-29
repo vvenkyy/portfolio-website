@@ -37,7 +37,7 @@ export default function WebDevPage() {
   }, []);
 
   return (
-    <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white text-black' : 'bg-black text-white'}`}>
+    <div className={`w-full min-h-screen flex flex-col font-sans ${theme === 'light' ? 'bg-white text-black' : 'bg-black text-white'}`} style={{ WebkitOverflowScrolling: 'touch', WebkitTapHighlightColor: 'transparent' }}>
       {/* Boot Animation Overlay */}
       {showBoot && (
         <motion.div
@@ -53,6 +53,7 @@ export default function WebDevPage() {
       {/* Hero Section */}
       <motion.section
         className={`w-full h-screen flex flex-col items-center justify-center px-6 md:px-32 border-b border-neutral-800 relative overflow-hidden ${theme === 'light' ? 'bg-white' : 'bg-black'}`}
+        style={{ WebkitOverflowScrolling: 'touch' }}
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.1, ease: 'easeOut' }}
@@ -104,8 +105,17 @@ export default function WebDevPage() {
               loop
               muted
               playsInline
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              x5-video-player-type="h5"
+              x5-video-player-fullscreen="false"
+              preload="auto"
               className="w-full h-full object-cover"
-              style={{ aspectRatio: '16/9' }}
+              style={{ 
+                aspectRatio: '16/9',
+                WebkitTransform: 'translate3d(0,0,0)',
+                transform: 'translate3d(0,0,0)'
+              }}
             />
           </div>
         </div>
@@ -202,8 +212,17 @@ export default function WebDevPage() {
               loop
               muted
               playsInline
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              x5-video-player-type="h5"
+              x5-video-player-fullscreen="false"
+              preload="auto"
               className="w-full h-full object-cover"
-              style={{ aspectRatio: '16/9' }}
+              style={{ 
+                aspectRatio: '16/9',
+                WebkitTransform: 'translate3d(0,0,0)',
+                transform: 'translate3d(0,0,0)'
+              }}
             />
           </div>
         </div>
