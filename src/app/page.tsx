@@ -173,11 +173,11 @@ export default function Home() {
             playsInline
             className="w-full h-full object-cover"
             style={{ position: 'absolute', inset: 0, filter: theme === 'light' ? 'invert(1) brightness(1.1) contrast(0.95)' : 'none' }}
-            quality="medium"
-            preload="metadata"
+            preload="none"
             maxWidth={1920}
             maxHeight={1080}
             priority={true}
+            mobileImage="/works/works backdrop/poster design.png"
           />
         </motion.div>
         {/* Cinematic Overlay */}
@@ -455,10 +455,10 @@ export default function Home() {
                     playsInline
                     className="w-full h-full object-cover rounded"
                     style={{ maxWidth: '100%', maxHeight: '100%' }}
-                    quality="low"
-                    preload="metadata"
+                    preload="none"
                     maxWidth={420}
                     maxHeight={315}
+                    mobileImage="/works/works backdrop/poster design.png"
                   />
                 ) : null}
               </div>
@@ -755,10 +755,10 @@ function StepRevealServices({ servicesSectionRef }: StepRevealServicesProps) {
                   playsInline
                   className="w-full h-full object-cover rounded"
                   style={{ maxWidth: '100%', maxHeight: '100%' }}
-                  quality="medium"
-                  preload="metadata"
+                  preload="none"
                   maxWidth={520}
                   maxHeight={390}
+                  mobileImage="/works/works backdrop/poster design.png"
                 />
               ) : null}
             </div>

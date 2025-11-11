@@ -120,10 +120,10 @@ export default function AppDevPage() {
             playsInline
             className="w-full h-full object-cover"
             style={{ aspectRatio: '16/9' }}
-            quality="medium"
-            preload="metadata"
+            preload="none"
             maxWidth={1920}
             maxHeight={1080}
+            mobileImage="/works/works backdrop/poster design.png"
           />
         </div>
       </section>

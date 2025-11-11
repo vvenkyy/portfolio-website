@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { useInView } from 'react-intersection-observer';
 
 interface OptimizedVideoProps {
@@ -12,143 +12,18 @@ interface OptimizedVideoProps {
   playsInline?: boolean;
   poster?: string;
   preload?: 'none' | 'metadata' | 'auto';
-  quality?: 'low' | 'medium' | 'high';
   maxWidth?: number;
   maxHeight?: number;
   priority?: boolean;
-  lazy?: boolean;
+  // Mobile fallback image
+  mobileImage?: string;
 }
 
-// Instagram/Facebook/TikTok-style Video Manager
-class SocialMediaVideoManager {
-  private static instance: SocialMediaVideoManager;
-  private videoCache: Map<string, HTMLVideoElement> = new Map();
-  private preloadQueue: Set<string> = new Set();
-  private activeVideos: Set<HTMLVideoElement> = new Set();
-  private maxConcurrentVideos = 1; // Instagram-style: only one video at a time
-  private preloadLimit = 3; // Preload next 3 videos
-  private isPreloading = false;
-
-  static getInstance(): SocialMediaVideoManager {
-    if (!SocialMediaVideoManager.instance) {
-      SocialMediaVideoManager.instance = new SocialMediaVideoManager();
-    }
-    return SocialMediaVideoManager.instance;
-  }
-
-  constructor() {
-    this.initializePerformanceMode();
-    this.startPreloadManager();
-  }
-
-  private initializePerformanceMode() {
-    // Instagram-style: aggressive mobile optimization
-    const isMobile = window.innerWidth <= 768;
-    const cores = navigator.hardwareConcurrency || 4;
-    const memory = (performance as any).memory;
-    
-    if (isMobile || cores <= 4) {
-      this.maxConcurrentVideos = 1;
-    }
-    
-    // Reduce preload on low memory
-    if (memory && memory.jsHeapSizeLimit < 2147483648) {
-      this.preloadLimit = 1;
-    }
-  }
-
-  private startPreloadManager() {
-    // Instagram-style: smart preloading
-    setInterval(() => {
-      this.managePreloadQueue();
-    }, 1000);
-  }
-
-  private managePreloadQueue() {
-    if (this.isPreloading || this.preloadQueue.size === 0) return;
-    
-    this.isPreloading = true;
-    const urls = Array.from(this.preloadQueue).slice(0, this.preloadLimit);
-    
-    urls.forEach(url => {
-      this.preloadVideo(url);
-      this.preloadQueue.delete(url);
-    });
-    
-    this.isPreloading = false;
-  }
-
-  private preloadVideo(src: string) {
-    if (this.videoCache.has(src)) return;
-    
-    const video = document.createElement('video');
-    video.muted = true;
-    video.preload = 'metadata';
-    video.style.display = 'none';
-    video.src = src;
-    
-    // Instagram-style: only load metadata initially
-    video.addEventListener('loadedmetadata', () => {
-      this.videoCache.set(src, video);
-    });
-    
-    document.body.appendChild(video);
-  }
-
-  registerVideo(video: HTMLVideoElement, priority: boolean = false) {
-    this.activeVideos.add(video);
-    
-    // Instagram-style: pause all other videos
-    if (this.activeVideos.size > this.maxConcurrentVideos) {
-      this.pauseNonPriorityVideos();
-    }
-  }
-
-  unregisterVideo(video: HTMLVideoElement) {
-    this.activeVideos.delete(video);
-  }
-
-  private pauseNonPriorityVideos() {
-    const videos = Array.from(this.activeVideos);
-    const priorityVideos = videos.filter(v => v.dataset.priority === 'true');
-    
-    // Keep only priority videos playing
-    videos.forEach(video => {
-      if (video.dataset.priority !== 'true' && !video.paused) {
-        video.pause();
-      }
-    });
-  }
-
-  canPlayVideo(priority: boolean = false): boolean {
-    if (priority) return true;
-    
-    const playingVideos = Array.from(this.activeVideos).filter(v => 
-      !v.paused && v.readyState >= 3
-    );
-    
-    return playingVideos.length < this.maxConcurrentVideos;
-  }
-
-  addToPreloadQueue(src: string) {
-    if (!this.preloadQueue.has(src)) {
-      this.preloadQueue.add(src);
-    }
-  }
-
-  getCachedVideo(src: string): HTMLVideoElement | null {
-    return this.videoCache.get(src) || null;
-  }
-
-  clearCache() {
-    this.videoCache.forEach(video => {
-      if (video.parentNode) {
-        video.parentNode.removeChild(video);
-      }
-    });
-    this.videoCache.clear();
-  }
-}
+// Simple mobile detection
+const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
 
 export default function OptimizedVideo({
   src,
@@ -159,135 +34,149 @@ export default function OptimizedVideo({
   muted = true,
   playsInline = true,
   poster,
-  preload = 'metadata',
-  quality = 'medium',
+  preload = 'none', // CRITICAL: No preloading by default
   maxWidth = 1920,
   maxHeight = 1080,
   priority = false,
-  lazy = true
+  mobileImage
 }: OptimizedVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [shouldPlay, setShouldPlay] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  
-  const videoManager = SocialMediaVideoManager.getInstance();
-  
-  // Instagram-style: aggressive intersection observer
+
+  // Intersection Observer - only load when visible
   const { ref: inViewRef, inView } = useInView({
     threshold: 0.1,
     triggerOnce: false,
-    rootMargin: '200px' // Larger margin for Instagram-style preloading
+    rootMargin: priority ? '200px' : '50px' // Only preload priority videos slightly ahead
   });
 
-  // Instagram-style: adaptive quality based on device
-  const adaptiveQuality = useMemo(() => {
-    const isMobile = window.innerWidth <= 768;
-    const cores = navigator.hardwareConcurrency || 4;
-    const connection = (navigator as any).connection;
-    
-    if (isMobile || cores <= 4) return 'low';
-    if (connection && connection.effectiveType === 'slow-2g') return 'low';
-    return quality;
-  }, [quality]);
-
-  // Instagram-style: optimized video source
-  const optimizedSrc = useMemo(() => {
-    // In production, this would return different quality URLs
-    // For now, return the original src
-    return src;
-  }, [src]);
-
+  // Detect mobile on mount and enable loading
   useEffect(() => {
-    // Add to preload queue immediately
-    videoManager.addToPreloadQueue(optimizedSrc);
-  }, [optimizedSrc, videoManager]);
+    const mobile = isMobileDevice();
+    setIsMobile(mobile);
+    
+    // Priority videos load immediately, others wait for inView
+    if (priority) {
+      setShouldLoad(true);
+    } else if (inView) {
+      setShouldLoad(true);
+    }
+  }, [inView, priority]);
 
+  // Handle video loading and playback
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video || !shouldLoad) return;
 
-    // Set priority flag
-    video.dataset.priority = priority.toString();
-    
-    // Register with manager
-    videoManager.registerVideo(video, priority);
-
-    // Instagram-style: aggressive performance optimizations
+    // Set video attributes
     video.preload = preload;
     video.muted = muted;
     video.playsInline = playsInline;
+    video.loop = loop;
     
-    // Instagram-style: visual optimizations for performance
-    if (adaptiveQuality === 'low') {
-      video.style.filter = 'blur(0.5px) brightness(0.98)';
-      video.style.transform = 'scale(1.01)';
-      video.playbackRate = 0.9; // Slightly slower for smoother playback
+    // Mobile optimizations: reduce playback quality to prevent overheating
+    if (isMobile) {
+      // Lower playback rate slightly to reduce CPU/GPU load
+      video.playbackRate = 0.95;
+      // Disable hardware acceleration hints that can cause overheating
+      video.style.transform = 'translateZ(0)';
     }
 
-    // Instagram-style: smart loading
-    if (inView && !isLoaded) {
-      // Check if we have a cached version
-      const cachedVideo = videoManager.getCachedVideo(optimizedSrc);
-      if (cachedVideo) {
-        video.src = cachedVideo.src;
-      } else {
-        video.src = optimizedSrc;
-      }
-      setIsLoaded(true);
-    }
-
-    // Instagram-style: pause when not visible
-    if (!inView && isPlaying) {
-      video.pause();
-      setIsPlaying(false);
-      setShouldPlay(false);
-    }
-
-    // Instagram-style: smart play logic
-    if (inView && isLoaded && autoPlay && !isPlaying) {
-      if (videoManager.canPlayVideo(priority)) {
-        setShouldPlay(true);
+    // Set src when ready to load
+    if (shouldLoad) {
+      // Get current src (might be full URL or relative)
+      const currentSrc = video.src || video.getAttribute('src') || '';
+      const normalizedCurrentSrc = currentSrc.replace(window.location.origin, '');
+      
+      // Only set src if it's different to avoid unnecessary reloads
+      if (normalizedCurrentSrc !== src && currentSrc !== src) {
+        video.src = src;
+        video.load(); // Explicitly load the video
       }
     }
 
-    // Event listeners
-    const handleLoadStart = () => setError(null);
-    
-    const handleCanPlay = () => {
-      if (shouldPlay && inView) {
+    // Play/pause based on visibility - CRITICAL for mobile to prevent overheating
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        video.pause();
+        setIsPlaying(false);
+      } else if (inView && autoPlay) {
         video.play().catch(() => {
-          // Auto-play failed, but that's okay
+          // Auto-play failed, that's okay
         });
       }
     };
-    
+
+    // Handle play/pause based on viewport
+    // Mobile: Slight delay to reduce initial load, but still auto-play
+    let playTimeout: NodeJS.Timeout | null = null;
+    if (inView && autoPlay && !isPlaying) {
+      if (isMobile) {
+        // On mobile, wait a bit before playing to reduce initial load spike
+        playTimeout = setTimeout(() => {
+          video.play().catch(() => {
+            // Auto-play failed
+          });
+        }, 200);
+      } else {
+        video.play().catch(() => {
+          // Auto-play failed
+        });
+      }
+    } else if (!inView && isPlaying) {
+      video.pause();
+      setIsPlaying(false);
+    }
+
+    // Event listeners
     const handlePlay = () => setIsPlaying(true);
     const handlePause = () => setIsPlaying(false);
-    
     const handleError = (e: Event) => {
-      console.error('Video error:', e);
-      setError('Failed to load video');
+      const video = e.target as HTMLVideoElement;
+      console.error('Video error:', e, video.error);
+      // Only set error for actual failures
+      if (video.error) {
+        // Don't show error for network issues immediately - might be temporary
+        if (video.error.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED) {
+          setError('Video format not supported');
+        } else if (video.error.code !== MediaError.MEDIA_ERR_NETWORK) {
+          // Only show error for non-network issues
+          setError('Failed to load video');
+        } else {
+          // Network error - log but don't show error message (might recover)
+          console.warn('Network error loading video, will retry');
+        }
+      }
+    };
+    
+    const handleLoadedData = () => {
+      // Clear any previous errors when video loads successfully
+      setError(null);
     };
 
-    video.addEventListener('loadstart', handleLoadStart);
-    video.addEventListener('canplay', handleCanPlay);
     video.addEventListener('play', handlePlay);
     video.addEventListener('pause', handlePause);
     video.addEventListener('error', handleError);
+    video.addEventListener('loadeddata', handleLoadedData);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      video.removeEventListener('loadstart', handleLoadStart);
-      video.removeEventListener('canplay', handleCanPlay);
+      if (playTimeout) clearTimeout(playTimeout);
       video.removeEventListener('play', handlePlay);
       video.removeEventListener('pause', handlePause);
       video.removeEventListener('error', handleError);
+      video.removeEventListener('loadeddata', handleLoadedData);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       
-      videoManager.unregisterVideo(video);
+      // Clean up: pause and remove src to free memory
+      video.pause();
+      video.src = '';
+      video.load();
     };
-  }, [src, inView, isLoaded, autoPlay, muted, playsInline, preload, adaptiveQuality, shouldPlay, priority, videoManager, optimizedSrc]);
+  }, [src, shouldLoad, inView, autoPlay, muted, playsInline, loop, preload, isMobile, isPlaying]);
 
   // Combine refs
   const setRefs = useCallback((element: HTMLVideoElement | null) => {
@@ -295,14 +184,23 @@ export default function OptimizedVideo({
     inViewRef(element);
   }, [inViewRef]);
 
+  // Mobile: Show poster image initially, then load video when ready
+  // This prevents initial heavy load on mobile
+
+  // Error state
   if (error) {
     return (
       <div className={`${className} flex items-center justify-center bg-gray-200 dark:bg-gray-800`} style={style}>
-        <p className="text-gray-500 dark:text-gray-400">Video unavailable</p>
+        {poster ? (
+          <img src={poster} alt="Video preview" className="w-full h-full object-cover" />
+        ) : (
+          <p className="text-gray-500 dark:text-gray-400">Video unavailable</p>
+        )}
       </div>
     );
   }
 
+  // Show video (mobile and desktop) - optimized for both
   return (
     <video
       ref={setRefs}
@@ -312,25 +210,20 @@ export default function OptimizedVideo({
         maxWidth: `${maxWidth}px`,
         maxHeight: `${maxHeight}px`,
         objectFit: 'cover' as const,
-        willChange: 'transform',
-        // Instagram-style: performance optimizations
-        ...(adaptiveQuality === 'low' && {
-          filter: 'blur(0.5px) brightness(0.98)',
-          transform: 'scale(1.01)'
-        })
+        // Mobile: Additional optimizations
+        ...(isMobile && {
+          willChange: 'auto', // Reduce GPU usage
+          backfaceVisibility: 'hidden',
+        }),
       }}
-      autoPlay={autoPlay}
+      autoPlay={autoPlay && shouldLoad} // Auto-play on both mobile and desktop
       loop={loop}
       muted={muted}
       playsInline={playsInline}
-      poster={poster}
+      poster={poster || mobileImage} // Use mobileImage as poster if no poster provided
       preload={preload}
-      // Instagram-style: performance attributes
       disablePictureInPicture
       disableRemotePlayback
-      {...(adaptiveQuality === 'low' && {
-        'data-quality': 'low'
-      })}
     />
   );
-} 
+}
